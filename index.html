@@ -83,6 +83,39 @@
   .sidebar-search input::placeholder { color: var(--text-dim); }
   .sidebar-search input:focus { border-color: var(--accent); }
 
+  .sidebar-search { position: relative; }
+  .search-results {
+    display: none;
+    position: absolute;
+    top: 100%; left: 16px; right: 16px;
+    margin-top: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    z-index: 300;
+    max-height: 360px;
+    overflow-y: auto;
+  }
+  .search-result {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.12s;
+  }
+  .search-result:last-child { border-bottom: none; }
+  .search-result:hover { background: rgba(79,156,249,0.1); }
+  .search-result-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; font-weight: 600;
+    min-width: 42px;
+  }
+  .search-result-info { flex: 1; min-width: 0; }
+  .search-result-name { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-result-process { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .search-empty { padding: 14px; font-size: 12px; color: var(--text-dim); text-align: center; }
+
   .sidebar-nav { overflow-y: auto; flex: 1; padding: 8px 0; }
 
   .nav-section { padding: 12px 16px 4px; }
@@ -877,7 +910,8 @@
       <div class="logo">CENDIS<span>Manual de Reportería</span></div>
     </div>
     <div class="sidebar-search">
-      <input type="text" id="globalSearch" placeholder="Buscar reporte o término..." oninput="globalSearchFn(this.value)">
+      <input type="text" id="globalSearch" placeholder="Buscar reporte o término..." oninput="globalSearchFn(this.value)" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section"><span class="nav-section-label">Inicio</span></div>
@@ -893,9 +927,11 @@
       <div class="nav-item" onclick="showSection('almacenaje')">🏗️ Almacenaje <span class="badge badge-green">6</span></div>
       <div class="nav-item" onclick="showSection('reposicion')">🔄 Reposición <span class="badge badge-orange">3</span></div>
       <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
-      <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">6</span></div>
+      <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">7</span></div>
       <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">4</span></div>
-      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">2</span></div>
+      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">4</span></div>
+      <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">3</span></div>
+      <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">9</span></div>
 
       <div class="nav-section"><span class="nav-section-label">Guías</span></div>
       <div class="nav-item" onclick="showSection('busquedas')">🔍 Búsquedas Clave</div>
@@ -1012,6 +1048,24 @@
         <div class="section-subtitle">Control de precisión de inventario, ajustes y conteos cíclicos.</div>
       </div>
       <div class="reports-grid" id="calidadGrid"></div>
+    </div>
+
+    <!-- DEMANDA -->
+    <div id="sec-demanda" class="section">
+      <div class="section-header">
+        <div class="section-title">📈 Demanda</div>
+        <div class="section-subtitle">Lo que las tiendas piden y lo que se les transfiere. R155 es la fuente más confiable y completa.</div>
+      </div>
+      <div class="reports-grid" id="demandaGrid"></div>
+    </div>
+
+    <!-- SLOT -->
+    <div id="sec-slot" class="section">
+      <div class="section-header">
+        <div class="section-title">📐 Slot & Ubicaciones</div>
+        <div class="section-subtitle">Todos los reportes que sirven para gestionar slots, posiciones, plan de almacenaje y ubicación física de los ítems.</div>
+      </div>
+      <div class="reports-grid" id="slotGrid"></div>
     </div>
 
     <!-- BUSQUEDAS CLAVE -->
@@ -1395,45 +1449,89 @@ const REPORTS = [
     category: 'calidad'
   },
   {
+    code: 'R028', name: 'Ubicaciones Para Conteo Diario', process: 'Calidad', color: '#f9c74f',
+    desc: 'Lista las ubicaciones programadas para conteo cíclico del día, con su tipo, zona e ítem asignado.',
+    fields: ['TIPO UBICACION','UBICACIÓN','ZONA','ID ARTICULO','DESCRIPCIÓN','TIPO CONTEO'],
+    questions: ['¿Qué ubicaciones debo contar hoy?', '¿Cuántos conteos hay programados por zona?', '¿Qué tipo de conteo corresponde a cada ubicación?'],
+    crosses: [['R150','Comparar ubicaciones programadas vs conteos realmente efectuados'], ['R020','Cruzar con el estatus actual de las ubicaciones a contar'], ['R025','Ver si las ubicaciones contadas generaron ajustes'], ['R081','Priorizar conteos en ubicaciones con doble ítem detectado']],
+    category: 'calidad'
+  },
+  {
+    code: 'R028', name: 'Ubicaciones Para Conteo Diario', process: 'Calidad', color: '#f9c74f',
+    desc: 'Lista las ubicaciones programadas para conteo cíclico del día, con su tipo, zona e ítem asignado.',
+    fields: ['TIPO UBICACION','UBICACIÓN','ZONA','ID ARTICULO','DESCRIPCIÓN','TIPO CONTEO'],
+    questions: ['¿Qué ubicaciones debo contar hoy?', '¿Cuántos conteos hay programados por zona?', '¿Qué tipo de conteo corresponde a cada ubicación?'],
+    crosses: [['R150','Comparar ubicaciones programadas vs conteos realmente efectuados'], ['R020','Cruzar con el estatus actual de las ubicaciones a contar'], ['R025','Ver si las ubicaciones contadas generaron ajustes'], ['R081','Priorizar conteos en ubicaciones con doble ítem detectado']],
+    category: 'calidad'
+  },
+  {
     code: 'R012', name: 'Maestro de Ítems Logísticos', process: 'Maestro', color: '#a78bfa',
     desc: 'Toda la información maestra de los ítems: dimensiones, paleta, inventario total y parámetros de reabastecimiento.',
     fields: ['ITEM','UBICACION DESPACHO','ZONA','DESCRIPCION','CASEPACK','CAPACIDAD PUESTO','ROP','TI','HI','DC_TI','DC_HI','DIMENSIONES ITEM','DIMENSIONES BULTO','UND PUESTO DESPACHO','UNIDADES DISTRIBUIDAS','PESO ITEM','VENCE','DIAS VENCIMIENTO','UND ALMACENAJE','ID PROVEEDOR','INVENTARIO TOTAL','INVENTARIO TEMPORAL','PLAN ALMACENAJE','SOM','TIENDAS ASOCIADAS','TIPO DISTRIBUCIÓN','SOH TIENDAS','NOMBRE PROVEEDOR','UNIDAD DESPACHO','ANAQUELES Y DEFINITIVOS'],
-    questions: ['¿Cuál es la configuración de paleta del ítem X?', '¿Cuál es el inventario total de este ítem?', '¿A qué tiendas va este ítem?'],
+    questions: ['¿Cuál es la configuración de paleta del ítem X?', '¿Cuál es el inventario total de este ítem?', '¿A qué tiendas va este ítem?', '¿Cuál es el plan de almacenaje y slot asignado?'],
     crosses: [['R031','Comparar inventario en puesto vs ROP'], ['R033','Validar inventario en almacenaje'], ['R045','Enriquecer fill rate con datos maestros']],
     category: 'maestro'
   },
   {
     code: 'R124', name: 'Demanda Líneas y Unidades', process: 'Demanda', color: '#f96b6b',
     desc: 'Cuántas unidades está pidiendo cada tienda por ítem.',
-    alert: '⚠️ ALERTA: El campo LÍNEAS tiene datos incorrectos. Usar solo el campo UNIDADES hasta nuevo aviso de María Parra.',
+    alert: 'ALERTA: El campo LÍNEAS tiene datos incorrectos. Usar solo el campo UNIDADES hasta nuevo aviso de María Parra.',
     fields: ['TIENDA','ITEM','LINEAS ⚠️','UNIDADES'],
     questions: ['¿Cuánto está pidiendo la tienda X del ítem Y? (solo UNIDADES)', '¿Qué tiendas tienen mayor demanda?'],
-    crosses: [['R120','Cruzar con disponibilidad en el almacén'], ['R049a','Comparar demanda vs fill rate por tienda']],
+    crosses: [['R155','Usar R155 como fuente confiable de demanda'], ['R120','Cruzar con disponibilidad en el almacén'], ['R049a','Comparar demanda vs fill rate por tienda']],
     category: 'demanda'
   },
   {
     code: 'R155', name: 'Detalle Distribución por Ítem y Tienda', process: 'Demanda', color: '#f96b6b',
-    desc: 'Detalle de la distribución comercial por ítem y tienda.',
-    alert: '⏳ Pendiente de configuración. Aún no tiene encabezados registrados.',
-    fields: ['Pendiente'],
-    questions: ['Ver detalle de distribución comercial por ítem y tienda'],
-    crosses: [],
+    desc: 'Vista comercial más completa de demanda: cruza pedido, asignado, inventario en tienda, inventario en CENDIS y ROP en una sola tabla.',
+    fields: ['STORE','ORDER_NO','ITEM','ITEM_DESC','DISTRIBUTION_PACK','PEDIDO','ASIGNADO','DEFINITE_MAX','INVENTARIO_TIENDA','INVENTARIO_CENDIS','ROP'],
+    questions: ['¿Cuál es la brecha entre lo pedido y lo asignado por tienda?', '¿La tienda está bajo su ROP?', '¿El CENDIS tiene stock para cubrir la demanda?', '¿La asignación respeta el máximo definitivo?'],
+    crosses: [['R049a','Comparar lo asignado vs fill rate real por OLA'], ['R120','Unir vista comercial con vista de puesto en almacén'], ['R031','Validar si el inventario en puesto cubre lo asignado'], ['R045','Relacionar demanda comercial con fill rate por ítem'], ['R124','Contrastar fuentes de demanda (R155 es la confiable)']],
     category: 'demanda'
+  },
+  {
+    code: 'R076', name: 'Detalle de Transferencia Mensual', process: 'Demanda', color: '#f96b6b',
+    desc: 'Histórico mensual consolidado de transferencias del CENDIS hacia las tiendas por ítem y fecha.',
+    fields: ['ITEM','DESCRIPCION','TIENDA ID','NOMBRE DE LA TIENDA','FECHA ENVIO','CANTIDAD'],
+    questions: ['¿Cuánto se transfirió de cada ítem en el mes?', '¿Qué tiendas recibieron más mercancía?', '¿Cuál es la tendencia de envíos por fecha?'],
+    crosses: [['R140','Comparar transferencias mensuales vs líneas pickeadas por día'], ['R155','Contrastar lo transferido históricamente vs demanda actual'], ['R130','Validar detalle diario vs consolidado mensual'], ['R012','Cruzar con tiendas asociadas del maestro']],
+    category: 'demanda'
+  },
+  {
+    code: 'R027', name: 'FTD Inventory CC (Conteo Cíclico)', process: 'Calidad', color: '#f9c74f',
+    desc: 'Registro del conteo cíclico de inventario: lo que cada usuario contó físicamente en cada ubicación.',
+    fields: ['TIPO UBICACION','UBICACIÓN','ZONA','UNIDADES CONTADAS','USUARIO','FECHA','HORA'],
+    questions: ['¿Qué conteos cíclicos se ejecutaron y por quién?', '¿Cuántas ubicaciones contó cada usuario?', '¿Qué se contó en la zona X?'],
+    crosses: [['R028','Comparar lo programado vs lo realmente contado'], ['R150','R027 es el conteo crudo, R150 trae el comparativo con ajuste'], ['R033','Validar unidades contadas vs inventario en almacenaje'], ['R025','Ver si los conteos generaron ajustes con costo'], ['R020','Actualizar el cycle count status de las ubicaciones']],
+    category: 'calidad'
   },
   {
     code: 'R070', name: 'Ítems +48h sin Despacho', process: 'Despacho', color: '#f96b6b',
     desc: 'Ítems que llevan más de 48 horas en el CENDIS sin ser despachados.',
-    alert: '🚫 Este reporte NO está funcionando actualmente. Sin datos / posiblemente inactivo.',
+    alert: 'Este reporte NO está funcionando actualmente. Sin datos / posiblemente inactivo.',
     fields: ['Sin datos'],
     questions: [],
     crosses: [],
     category: 'despacho'
+  },
+  // ─── SLOT: reportes relacionados con ubicaciones, slotting y posiciones ───
+  {
+    code: 'R012s', name: 'Maestro de Ítems — Vista Slot', process: 'Slot', color: '#22d3ee',
+    desc: 'Desde el maestro de ítems se ve el slot/ubicación de despacho asignada, zona, plan de almacenaje y anaqueles definitivos de cada ítem.',
+    fields: ['ITEM','UBICACION DESPACHO','ZONA','PLAN ALMACENAJE','ANAQUELES Y DEFINITIVOS','CAPACIDAD PUESTO'],
+    questions: ['¿Qué slot tiene asignado el ítem X?', '¿Cuál es su plan de almacenaje?', '¿Cuál es la capacidad del puesto?'],
+    crosses: [['R031','Ver inventario actual en ese slot'], ['R020','Validar estatus de la ubicación'], ['R003','Ver contenido detallado del slot']],
+    category: 'slot', aliasOf: 'R012'
   }
 ];
+
+// Reportes que también aplican a la categoría SLOT (referencias cruzadas, no duplican ficha)
+const SLOT_RELATED = ['R012','R003','R020','R031','R033','R053','R081','R000','R120'];
 
 const QUICK_FIND = [
   { q: '¿Qué mercancía llegó hoy?', codes: ['R117','R111','R042'] },
   { q: '¿Dónde está un ítem en el almacén?', codes: ['R003','R033','R031','R053','R081'] },
+  { q: '¿Qué slot tiene asignado un ítem?', codes: ['R012','R003','R020'] },
   { q: '¿Cómo va el avance del despacho?', codes: ['R080','R004','R049a'] },
   { q: '¿Cuánto pickeó cada operario?', codes: ['R049'] },
   { q: '¿Cuántas unidades se cancelaron?', codes: ['R121','R122'] },
@@ -1442,12 +1540,12 @@ const QUICK_FIND = [
   { q: '¿Qué contenedores no han salido?', codes: ['R013'] },
   { q: '¿Qué puestos necesitan reposición?', codes: ['R031','R119'] },
   { q: '¿Cuánto costaron los ajustes?', codes: ['R025'] },
-  { q: '¿Cuál es la demanda por tienda?', codes: ['R124','R120'] },
-  { q: '¿Qué tan preciso es mi inventario?', codes: ['R150'] },
+  { q: '¿Cuál es la demanda por tienda?', codes: ['R155','R124','R120'] },
+  { q: '¿Qué tan preciso es mi inventario?', codes: ['R150','R027','R028'] },
+  { q: '¿Qué se transfirió este mes?', codes: ['R076'] },
   { q: '¿Qué devolvió o faltó un proveedor?', codes: ['R034'] },
-  { q: '¿Cuál es la productividad de recepción?', codes: ['R085'] },
   { q: '¿Hay contenedores bloqueados?', codes: ['R033'] },
-  { q: '¿Cuántas reposiciones están pendientes?', codes: ['R119','R093'] },
+  { q: '¿Qué conteos cíclicos se hicieron?', codes: ['R027','R028','R150'] },
 ];
 
 const FLOW_STEPS = [
@@ -1456,7 +1554,7 @@ const FLOW_STEPS = [
   { num: '3', name: 'Reposición', codes: ['R119','R093','R094','R031'], desc: 'Cuando un puesto baja del ROP, se genera tarea de reposición desde almacenaje.' },
   { num: '4', name: 'Picking', codes: ['R049','R140','R045','R120'], desc: 'Los operarios recogen productos y los colocan en contenedores para cada tienda.' },
   { num: '5', name: 'Despacho', codes: ['R004','R009','R013','R080','R095','R130'], desc: 'Los contenedores se organizan, cargan y preparan para salir al camión.' },
-  { num: '6', name: 'Envío', codes: ['R049a','R121','R122','R124','R155'], desc: 'El camión sale y se mide el nivel de cumplimiento hacia las tiendas.' },
+  { num: '6', name: 'Envío', codes: ['R049a','R121','R122','R124','R155','R076'], desc: 'El camión sale y se mide el nivel de cumplimiento hacia las tiendas.' },
 ];
 
 const GLOSARIO = {
@@ -1467,26 +1565,29 @@ const GLOSARIO = {
     { t: 'Inventario Total', d: 'Todo lo que hay: puesto + almacenaje + temporales.' },
     { t: 'ROP (Reorder Point)', d: 'Punto de reorden. Cuando el inventario en puesto baja de este nivel, se debe reponer.' },
     { t: 'SOM / Store OM', d: 'Orden mínima por tienda. Cantidad mínima que se envía a cada tienda.' },
+    { t: 'Definite Max', d: 'Cantidad máxima definitiva que se puede asignar/enviar a una tienda.' },
     { t: 'Lote', d: 'Número que identifica un grupo de productos recibidos juntos. Sirve para trazabilidad y vencimientos.' },
     { t: 'Foto de Inventario', d: 'Captura del stock disponible en el momento exacto en que se generó el pedido.' },
   ],
-  'Empaque y Paletización': [
-    { t: 'Case Pack / Casepack', d: 'Cantidad de unidades que vienen dentro de una caja (bulto) del proveedor.' },
-    { t: 'Bulto', d: 'Una caja o empaque del proveedor que contiene varias unidades.' },
-    { t: 'Sub-bulto', d: 'Agrupación menor dentro del bulto.' },
-    { t: 'TI', d: 'Número de bultos por capa en una paleta (hacia las tiendas).' },
-    { t: 'HI', d: 'Número de capas de una paleta (hacia las tiendas).' },
-    { t: 'DC_TI / DC_HI', d: 'TI y HI para paletas dentro del Centro de Distribución.' },
-    { t: 'Roller', d: 'Estructura rodante para transportar mercancía dentro del almacén o al camión.' },
-    { t: 'Cesta', d: 'Contenedor tipo canasta usado para agrupar mercancía de picking.' },
-  ],
-  'Ubicación': [
+  'Slot y Ubicación': [
     { t: 'Slot / Puesto', d: 'La posición física asignada a un ítem en la zona de picking.' },
     { t: 'Zona', d: 'Área del almacén (ej: zona A, zona B, zona picking, zona almacenaje).' },
     { t: 'Nivel', d: 'Altura dentro de una estantería (nivel 1 = piso, etc.).' },
     { t: 'Ubicación Temporal', d: 'Lugar provisional donde se pone la mercancía cuando aún no tiene ubicación definitiva.' },
     { t: 'Doble Ubicación', d: 'Cuando un mismo ítem está guardado en dos lugares — puede causar fallas de inventario.' },
-    { t: 'Plan de Almacenaje', d: 'La regla que define dónde debe ir guardado cada ítem.' },
+    { t: 'Plan de Almacenaje', d: 'La regla que define dónde debe ir guardado cada ítem (qué slot le corresponde).' },
+    { t: 'Anaqueles y Definitivos', d: 'Las posiciones fijas y definitivas asignadas a un ítem en el almacén.' },
+    { t: 'Tipo de Ubicación', d: 'Clasificación de la posición: picking, almacenaje, temporal, etc.' },
+  ],
+  'Empaque y Paletización': [
+    { t: 'Case Pack / Casepack', d: 'Cantidad de unidades que vienen dentro de una caja (bulto) del proveedor.' },
+    { t: 'Distribution Pack', d: 'Empaque o múltiplo en que se distribuye el ítem hacia las tiendas.' },
+    { t: 'Bulto', d: 'Una caja o empaque del proveedor que contiene varias unidades.' },
+    { t: 'TI', d: 'Número de bultos por capa en una paleta (hacia las tiendas).' },
+    { t: 'HI', d: 'Número de capas de una paleta (hacia las tiendas).' },
+    { t: 'DC_TI / DC_HI', d: 'TI y HI para paletas dentro del Centro de Distribución.' },
+    { t: 'Roller', d: 'Estructura rodante para transportar mercancía dentro del almacén o al camión.' },
+    { t: 'Cesta', d: 'Contenedor tipo canasta usado para agrupar mercancía de picking.' },
   ],
   'Recepción': [
     { t: 'ASN', d: 'Advanced Shipping Notice. Aviso que manda el proveedor antes de llegar diciendo qué va a traer.' },
@@ -1504,6 +1605,7 @@ const GLOSARIO = {
     { t: 'Unidades Asignadas', d: 'Unidades reservadas en el sistema para un pedido, aún no pickeadas.' },
     { t: 'Unidades Canceladas', d: 'Unidades que no se pudieron despachar y se cancelaron definitivamente.' },
     { t: 'Unidades Pendientes', d: 'Unidades que aún no se despacharon pero todavía pueden recuperarse.' },
+    { t: 'Transferencia', d: 'Envío de mercancía del CENDIS hacia una tienda.' },
     { t: 'MED / MISC', d: 'Tipos de despacho: MED = medicamentos, MISC = productos misceláneos/generales.' },
   ],
   'Productividad': [
@@ -1515,7 +1617,8 @@ const GLOSARIO = {
     { t: 'AVG', d: 'Promedio (average). Ej: AVG_LNS = promedio de líneas por día.' },
   ],
   'Calidad e Inventario': [
-    { t: 'Cycle Count', d: 'Conteo cíclico. Proceso de contar físicamente el inventario para verificar que coincida con el sistema.' },
+    { t: 'Cycle Count / Conteo Cíclico', d: 'Proceso de contar físicamente el inventario para verificar que coincida con el sistema.' },
+    { t: 'Tipo de Conteo', d: 'Clasificación del conteo programado para una ubicación.' },
     { t: 'Ajuste', d: 'Corrección al inventario del sistema cuando no coincide con lo físico.' },
     { t: 'Estatus I', d: 'Contenedor disponible para uso.' },
     { t: 'Estatus X', d: 'Contenedor bloqueado por vencimiento.' },
@@ -1526,327 +1629,268 @@ const GLOSARIO = {
 };
 
 const SCENARIOS = [
-  {
-    icon: '📦',
-    q: '¿Quiero saber si un ítem llegó hoy?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R117\')">R117</span> — busca por ítem o fecha de recepción.',
-      'Complementa con <span class="rtag" onclick="openModal(\'R042\')">R042</span> si quieres ver si todavía está en puerta.',
-      'Usa <span class="rtag" onclick="openModal(\'R111\')">R111</span> para ver el total de contenedores por orden de compra.'
-    ]
-  },
-  {
-    icon: '🔍',
-    q: '¿Quiero saber dónde está un ítem ahora mismo?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — si está en el puesto de picking.',
-      'Abre <span class="rtag" onclick="openModal(\'R033\')">R033</span> — si está en almacenaje.',
-      'Abre <span class="rtag" onclick="openModal(\'R053\')">R053</span> — si está en ubicación temporal.',
-      'Abre <span class="rtag" onclick="openModal(\'R003\')">R003</span> — para ver la ubicación exacta con cesta y contenedor.',
-      'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — si sospechas que está en dos lugares al mismo tiempo.'
-    ]
-  },
-  {
-    icon: '🚚',
-    q: '¿Quiero ver el avance del despacho?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R080\')">R080</span> — para ver el % de avance por zona en tiempo real.',
-      'Abre <span class="rtag" onclick="openModal(\'R004\')">R004</span> — para el resumen ejecutivo por OLA y tienda.',
-      'Abre <span class="rtag" onclick="openModal(\'R049a\')">R049a</span> — para el fill rate de cada OLA.'
-    ]
-  },
-  {
-    icon: '❌',
-    q: '¿Quiero saber por qué se cancelaron unidades?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R121\')">R121</span> — para ver las cancelaciones definitivas.',
-      'Abre <span class="rtag" onclick="openModal(\'R122\')">R122</span> — para ver las que todavía se pueden recuperar.',
-      'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — para verificar si hay fallas de inventario asociadas.',
-      'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — para ver si el puesto tenía stock al momento.'
-    ]
-  },
-  {
-    icon: '🔄',
-    q: '¿Qué puestos necesitan reposición urgente?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — filtra ítems donde inventario en puesto esté por debajo del ROP.',
-      'Cruza con <span class="rtag" onclick="openModal(\'R119\')">R119</span> para ver si ya hay una tarea generada.',
-      'Cruza con <span class="rtag" onclick="openModal(\'R033\')">R033</span> para confirmar que hay stock en almacenaje disponible.'
-    ]
-  },
-  {
-    icon: '📊',
-    q: '¿Quiero revisar el fill rate de las tiendas?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R049a\')">R049a</span> — para el fill rate por OLA (vista ejecutiva).',
-      'Abre <span class="rtag" onclick="openModal(\'R045\')">R045</span> — para profundizar por ítem específico.',
-      'Abre <span class="rtag" onclick="openModal(\'R124\')">R124</span> — para ver la demanda por tienda (⚠️ solo campo UNIDADES).'
-    ]
-  },
-  {
-    icon: '🔒',
-    q: '¿Hay un contenedor bloqueado, qué hago?',
-    steps: [
-      'Identifica el estatus en <span class="rtag" onclick="openModal(\'R033\')">R033</span>: I = disponible, X = vencido, T = WIP.',
-      'Si el estatus es X → vencimiento. Gestionar con el área correspondiente.',
-      'Si el estatus es T → WIP. Ve a la sección "Procedimiento WIP" en el menú izquierdo.',
-    ]
-  },
-  {
-    icon: '✅',
-    q: '¿Quiero verificar la precisión del inventario?',
-    steps: [
-      'Abre <span class="rtag" onclick="openModal(\'R150\')">R150</span> — para ver los conteos efectuados y sus diferencias.',
-      'Abre <span class="rtag" onclick="openModal(\'R025\')">R025</span> — para ver el costo de los ajustes realizados.',
-      'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — para ver si hay ítems con doble ubicación que distorsionan el inventario.'
-    ]
-  },
+  { icon:'📦', q:'¿Quiero saber si un ítem llegó hoy?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R117\')">R117</span> — busca por ítem o fecha de recepción.',
+    'Complementa con <span class="rtag" onclick="openModal(\'R042\')">R042</span> si quieres ver si todavía está en puerta.',
+    'Usa <span class="rtag" onclick="openModal(\'R111\')">R111</span> para ver el total de contenedores por orden de compra.'
+  ]},
+  { icon:'🔍', q:'¿Quiero saber dónde está un ítem ahora mismo?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — si está en el puesto de picking.',
+    'Abre <span class="rtag" onclick="openModal(\'R033\')">R033</span> — si está en almacenaje.',
+    'Abre <span class="rtag" onclick="openModal(\'R053\')">R053</span> — si está en ubicación temporal.',
+    'Abre <span class="rtag" onclick="openModal(\'R003\')">R003</span> — para ver la ubicación exacta con cesta y contenedor.',
+    'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — si sospechas que está en dos lugares al mismo tiempo.'
+  ]},
+  { icon:'📐', q:'¿Quiero saber qué slot/ubicación tiene asignado un ítem?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R012\')">R012</span> — el maestro muestra la ubicación de despacho, zona y plan de almacenaje.',
+    'Confirma con <span class="rtag" onclick="openModal(\'R020\')">R020</span> el estatus y tipo de esa ubicación.',
+    'Revisa <span class="rtag" onclick="openModal(\'R003\')">R003</span> para ver el contenido real del slot.'
+  ]},
+  { icon:'🚚', q:'¿Quiero ver el avance del despacho?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R080\')">R080</span> — para ver el % de avance por zona en tiempo real.',
+    'Abre <span class="rtag" onclick="openModal(\'R004\')">R004</span> — para el resumen ejecutivo por OLA y tienda.',
+    'Abre <span class="rtag" onclick="openModal(\'R049a\')">R049a</span> — para el fill rate de cada OLA.'
+  ]},
+  { icon:'❌', q:'¿Quiero saber por qué se cancelaron unidades?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R121\')">R121</span> — para ver las cancelaciones definitivas.',
+    'Abre <span class="rtag" onclick="openModal(\'R122\')">R122</span> — para ver las que todavía se pueden recuperar.',
+    'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — para verificar si hay fallas de inventario asociadas.'
+  ]},
+  { icon:'📊', q:'¿Quiero revisar la demanda de las tiendas?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R155\')">R155</span> — la fuente más completa: pedido, asignado, inventario tienda y CENDIS.',
+    'Complementa con <span class="rtag" onclick="openModal(\'R120\')">R120</span> para la vista desde el almacén.',
+    'Evita confiar en las líneas de <span class="rtag" onclick="openModal(\'R124\')">R124</span> (campo con error).'
+  ]},
+  { icon:'✅', q:'¿Quiero verificar la precisión del inventario / conteos?', steps:[
+    'Abre <span class="rtag" onclick="openModal(\'R028\')">R028</span> — para ver las ubicaciones programadas a contar.',
+    'Abre <span class="rtag" onclick="openModal(\'R027\')">R027</span> — para ver lo que se contó físicamente y por quién.',
+    'Abre <span class="rtag" onclick="openModal(\'R150\')">R150</span> — para el comparativo original vs contado y los ajustes.',
+    'Abre <span class="rtag" onclick="openModal(\'R025\')">R025</span> — para ver el costo de los ajustes.'
+  ]},
+  { icon:'🔒', q:'¿Hay un contenedor bloqueado, qué hago?', steps:[
+    'Identifica el estatus en <span class="rtag" onclick="openModal(\'R033\')">R033</span>: I = disponible, X = vencido, T = WIP.',
+    'Si el estatus es X → vencimiento. Gestionar con el área correspondiente.',
+    'Si el estatus es T → WIP. Ve a la sección "Procedimiento WIP" en el menú izquierdo.'
+  ]},
 ];
 
 const ALERTS_DATA = [
-  { code: 'ASN', type: 'warning', msg: 'Siempre ingresar el número de cita. Sin ese dato el reporte sale en cero.' },
-  { code: 'R009', type: 'warning', msg: 'Filtrar siempre por tienda. Sin filtro los datos no son útiles.' },
-  { code: 'R070', type: 'danger', msg: 'Este reporte no está funcionando actualmente. Sin datos / posiblemente inactivo.' },
-  { code: 'R124', type: 'danger', msg: 'El campo LÍNEAS tiene datos incorrectos. Usar solo el campo UNIDADES hasta que María Parra lo certifique.' },
-  { code: 'R155', type: 'info', msg: 'Pendiente de configuración. No tiene estructura disponible aún.' },
-  { code: 'R092', type: 'info', msg: 'Solo muestra el total del equipo. No hay desglose por operario individual.' },
+  { code:'ASN', type:'warning', msg:'Siempre ingresar el número de cita. Sin ese dato el reporte sale en cero.' },
+  { code:'R009', type:'warning', msg:'Filtrar siempre por tienda. Sin filtro los datos no son útiles.' },
+  { code:'R070', type:'danger', msg:'Este reporte no está funcionando actualmente. Sin datos / posiblemente inactivo.' },
+  { code:'R124', type:'danger', msg:'El campo LÍNEAS tiene datos incorrectos. Usar solo el campo UNIDADES hasta que María Parra lo certifique.' },
+  { code:'R092', type:'info', msg:'Solo muestra el total del equipo. No hay desglose por operario individual.' },
 ];
 
 // ============ RENDER FUNCTIONS ============
+function getReportColor(code){ const r=REPORTS.find(x=>x.code===code); return r?r.color:'#4f9cf9'; }
 
-function getReportColor(code) {
-  const r = REPORTS.find(x => x.code === code);
-  return r ? r.color : '#4f9cf9';
+function buildQuickTable(){
+  const tbody=document.getElementById('quickTableBody');
+  tbody.innerHTML=QUICK_FIND.map(item=>`
+    <tr><td class="question-text">${item.q}</td>
+    <td><div class="report-tags">${item.codes.map(c=>`<span class="rtag" onclick="openModal('${c}')">${c}</span>`).join('')}</div></td></tr>`).join('');
 }
 
-function buildQuickTable() {
-  const tbody = document.getElementById('quickTableBody');
-  tbody.innerHTML = QUICK_FIND.map(item => `
-    <tr>
-      <td class="question-text">${item.q}</td>
-      <td><div class="report-tags">${item.codes.map(c => `<span class="rtag" onclick="openModal('${c}')">${c}</span>`).join('')}</div></td>
-    </tr>
-  `).join('');
-}
-
-function buildFlowDiagram() {
-  const container = document.getElementById('flowContainer');
-  container.innerHTML = FLOW_STEPS.map((step, i) => `
+function buildFlowDiagram(){
+  const container=document.getElementById('flowContainer');
+  container.innerHTML=FLOW_STEPS.map((step,i)=>`
     <div class="flow-step" id="flow-${i}" onclick="showFlowDetail(${i})">
       <div class="flow-number">0${step.num}</div>
       <div class="flow-name">${step.name}</div>
-      <div class="flow-reports">${step.codes.map(c => `<span class="flow-rtag">${c}</span>`).join('')}</div>
-    </div>
-  `).join('');
+      <div class="flow-reports">${step.codes.map(c=>`<span class="flow-rtag">${c}</span>`).join('')}</div>
+    </div>`).join('');
 }
 
-function showFlowDetail(idx) {
-  document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active-flow'));
-  document.getElementById('flow-' + idx).classList.add('active-flow');
-  const step = FLOW_STEPS[idx];
-  const detail = document.getElementById('flowDetail');
-  detail.style.display = 'block';
-  detail.innerHTML = `
-    <div class="card-title">Etapa ${step.num}: ${step.name}</div>
+function showFlowDetail(idx){
+  document.querySelectorAll('.flow-step').forEach(s=>s.classList.remove('active-flow'));
+  document.getElementById('flow-'+idx).classList.add('active-flow');
+  const step=FLOW_STEPS[idx];
+  const detail=document.getElementById('flowDetail');
+  detail.style.display='block';
+  detail.innerHTML=`<div class="card-title">Etapa ${step.num}: ${step.name}</div>
     <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">${step.desc}</p>
-    <div class="report-tags">${step.codes.map(c => `<span class="rtag" onclick="openModal('${c}')">${c} — ${REPORTS.find(r=>r.code===c)?.name||''}</span>`).join('')}</div>
-  `;
+    <div class="report-tags">${step.codes.map(c=>`<span class="rtag" onclick="openModal('${c}')">${c} — ${REPORTS.find(r=>r.code===c)?.name||''}</span>`).join('')}</div>`;
 }
 
-function buildGlosario() {
-  const container = document.getElementById('glosarioContainer');
-  container.innerHTML = Object.entries(GLOSARIO).map(([cat, items]) => `
-    <div class="glossary-category">
-      <div class="glossary-category-title">${cat}</div>
-      ${items.map(item => `
-        <div class="glossary-item">
-          <div class="glossary-term">${item.t}</div>
-          <div class="glossary-def">${item.d}</div>
-        </div>
-      `).join('')}
-    </div>
-  `).join('');
+function buildGlosario(){
+  const container=document.getElementById('glosarioContainer');
+  container.innerHTML=Object.entries(GLOSARIO).map(([cat,items])=>`
+    <div class="glossary-category"><div class="glossary-category-title">${cat}</div>
+    ${items.map(item=>`<div class="glossary-item"><div class="glossary-term">${item.t}</div><div class="glossary-def">${item.d}</div></div>`).join('')}
+    </div>`).join('');
 }
 
-function filterGlosario(val) {
-  const v = val.toLowerCase();
-  document.querySelectorAll('.glossary-item').forEach(el => {
-    const text = el.textContent.toLowerCase();
-    el.classList.toggle('hidden', v.length > 0 && !text.includes(v));
+function filterGlosario(val){
+  const v=val.toLowerCase();
+  document.querySelectorAll('.glossary-item').forEach(el=>{
+    const text=el.textContent.toLowerCase();
+    el.classList.toggle('hidden', v.length>0 && !text.includes(v));
   });
 }
 
-function buildReportCard(r) {
-  return `
-    <div class="report-card" style="--card-accent:${r.color}" onclick="openModal('${r.code}')">
-      <div class="report-card-code">${r.code}</div>
-      <div class="report-card-name">${r.name}</div>
-      <div class="report-card-desc">${r.desc}</div>
-      <span class="report-card-tag">${r.process}</span>
-      ${r.alert ? `<span class="report-card-tag" style="color:var(--warning);background:rgba(249,199,79,0.08);">⚠️ Ver nota</span>` : ''}
-    </div>
-  `;
+function buildReportCard(r){
+  return `<div class="report-card" style="--card-accent:${r.color}" onclick="openModal('${r.code}')">
+    <div class="report-card-code">${r.code}</div>
+    <div class="report-card-name">${r.name}</div>
+    <div class="report-card-desc">${r.desc}</div>
+    <span class="report-card-tag">${r.process}</span>
+    ${r.alert?`<span class="report-card-tag" style="color:var(--warning);background:rgba(249,199,79,0.08);">⚠️ Ver nota</span>`:''}
+  </div>`;
 }
 
-function buildGridForCategory(gridId, category) {
-  const container = document.getElementById(gridId);
-  if (!container) return;
-  const filtered = category === 'all' ? REPORTS : REPORTS.filter(r => r.category === category);
-  container.innerHTML = filtered.map(buildReportCard).join('');
+function buildGridForCategory(gridId, category){
+  const container=document.getElementById(gridId);
+  if(!container) return;
+  let filtered;
+  if(category==='all'){
+    filtered=REPORTS.filter(r=>!r.aliasOf);
+  } else if(category==='slot'){
+    // SLOT: combina los reportes marcados slot + los relacionados (sin duplicar fichas alias)
+    const slotCodes=new Set(SLOT_RELATED);
+    filtered=REPORTS.filter(r=>!r.aliasOf && slotCodes.has(r.code));
+  } else {
+    filtered=REPORTS.filter(r=>r.category===category && !r.aliasOf);
+  }
+  container.innerHTML=filtered.map(buildReportCard).join('');
 }
 
-function buildScenarios() {
-  const container = document.getElementById('scenarioList');
-  container.innerHTML = SCENARIOS.map((s, i) => `
+function buildScenarios(){
+  const container=document.getElementById('scenarioList');
+  container.innerHTML=SCENARIOS.map((s,i)=>`
     <div class="scenario" id="scenario-${i}">
       <div class="scenario-header" onclick="toggleScenario(${i})">
         <span class="scenario-icon">${s.icon}</span>
         <span class="scenario-q">${s.q}</span>
         <span class="scenario-chevron">▶</span>
       </div>
-      <div class="scenario-body">
-        <ol class="step-list">
-          ${s.steps.map(step => `<li>${step}</li>`).join('')}
-        </ol>
-      </div>
-    </div>
-  `).join('');
+      <div class="scenario-body"><ol class="step-list">${s.steps.map(step=>`<li>${step}</li>`).join('')}</ol></div>
+    </div>`).join('');
 }
 
-function toggleScenario(i) {
-  const el = document.getElementById('scenario-' + i);
-  el.classList.toggle('open');
-}
+function toggleScenario(i){ document.getElementById('scenario-'+i).classList.toggle('open'); }
 
-function buildAlerts() {
-  const container = document.getElementById('alertsGrid');
-  container.innerHTML = ALERTS_DATA.map(a => `
-    <div class="alert-card ${a.type}">
-      <div class="alert-card-code">${a.code}</div>
-      <div class="alert-card-msg">${a.msg}</div>
-    </div>
-  `).join('');
+function buildAlerts(){
+  const container=document.getElementById('alertsGrid');
+  container.innerHTML=ALERTS_DATA.map(a=>`<div class="alert-card ${a.type}"><div class="alert-card-code">${a.code}</div><div class="alert-card-msg">${a.msg}</div></div>`).join('');
 }
 
 // ============ MODAL ============
-
-function openModal(code) {
-  const r = REPORTS.find(x => x.code === code);
-  if (!r) return;
-  const body = document.getElementById('modalBody');
-  body.innerHTML = `
+function openModal(code){
+  let r=REPORTS.find(x=>x.code===code);
+  if(!r){ r=REPORTS.find(x=>x.aliasOf===code); }
+  if(!r) return;
+  const body=document.getElementById('modalBody');
+  body.innerHTML=`
     <div class="modal-code">${r.code}</div>
     <div class="modal-title">${r.name}</div>
     <div class="modal-process">Proceso: ${r.process}</div>
-    ${r.alert ? `<div class="alert-box">⚠️ <span>${r.alert}</span></div>` : ''}
-    <div class="modal-section">
-      <div class="modal-section-title">¿Para qué sirve?</div>
-      <p class="modal-desc">${r.desc}</p>
-    </div>
-    <div class="modal-section">
-      <div class="modal-section-title">Campos disponibles</div>
-      <div class="fields-list">${r.fields.map(f => `<span class="field-tag">${f}</span>`).join('')}</div>
-    </div>
-    ${r.questions.length ? `
-    <div class="modal-section">
-      <div class="modal-section-title">Preguntas que responde</div>
-      <ul class="questions-list">${r.questions.map(q => `<li>${q}</li>`).join('')}</ul>
-    </div>` : ''}
-    ${r.crosses.length ? `
-    <div class="modal-section">
-      <div class="modal-section-title">Combínalo con</div>
-      <ul class="crosses-list">${r.crosses.map(([code, desc]) => `
-        <li>
-          <span class="cross-code" onclick="switchModal('${code}')">${code}</span>
-          <span>${desc}</span>
-        </li>
-      `).join('')}</ul>
-    </div>` : ''}
+    ${r.alert?`<div class="alert-box">⚠️ <span>${r.alert}</span></div>`:''}
+    <div class="modal-section"><div class="modal-section-title">¿Para qué sirve?</div><p class="modal-desc">${r.desc}</p></div>
+    <div class="modal-section"><div class="modal-section-title">Campos disponibles</div><div class="fields-list">${r.fields.map(f=>`<span class="field-tag">${f}</span>`).join('')}</div></div>
+    ${r.questions.length?`<div class="modal-section"><div class="modal-section-title">Preguntas que responde</div><ul class="questions-list">${r.questions.map(q=>`<li>${q}</li>`).join('')}</ul></div>`:''}
+    ${r.crosses.length?`<div class="modal-section"><div class="modal-section-title">Combínalo con</div><ul class="crosses-list">${r.crosses.map(([code,desc])=>`<li><span class="cross-code" onclick="openModal('${code}')">${code}</span><span>${desc}</span></li>`).join('')}</ul></div>`:''}
   `;
   document.getElementById('modalOverlay').classList.add('open');
 }
-
-function switchModal(code) {
-  openModal(code);
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('open');
-}
-
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeModal();
-}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+function closeModalOutside(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 
 // ============ NAVIGATION ============
-
-function showSection(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
-  // Close mobile menu when a section is selected
+function showSection(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  if(event && event.currentTarget) event.currentTarget.classList.add('active');
   closeMobileMenu();
-  // Scroll to top on mobile
-  if (window.innerWidth <= 768) {
-    document.querySelector('.main').scrollTop = 0;
-    window.scrollTo(0, 0);
-  }
+  if(window.matchMedia('(orientation: portrait)').matches){ window.scrollTo(0,0); }
 }
 
-function toggleMobileMenu() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  const btn = document.getElementById('hamburgerBtn');
-  const isOpen = sidebar.classList.contains('mobile-open');
-  if (isOpen) {
-    closeMobileMenu();
-  } else {
-    sidebar.classList.add('mobile-open');
-    overlay.classList.add('open');
-    btn.classList.add('open');
-    document.body.style.overflow = 'hidden';
+// ============ SMART SEARCH ============
+function buildSearchIndex(){
+  // Construye un índice de términos → reportes
+  const index=[];
+  REPORTS.filter(r=>!r.aliasOf).forEach(r=>{
+    const haystack=[r.code, r.name, r.desc, r.process, ...(r.fields||[]), ...(r.questions||[])].join(' ').toLowerCase();
+    index.push({ code:r.code, name:r.name, process:r.process, color:r.color, haystack });
+  });
+  return index;
+}
+let SEARCH_INDEX=[];
+
+function globalSearchFn(val){
+  const box=document.getElementById('searchResults');
+  const v=val.trim().toLowerCase();
+  if(v.length<2){ box.style.display='none'; box.innerHTML=''; return; }
+  const tokens=v.split(/\s+/);
+  const scored=SEARCH_INDEX.map(item=>{
+    let score=0;
+    tokens.forEach(tok=>{
+      if(item.code.toLowerCase()===tok) score+=100;
+      else if(item.code.toLowerCase().includes(tok)) score+=40;
+      if(item.name.toLowerCase().includes(tok)) score+=25;
+      if(item.process.toLowerCase().includes(tok)) score+=15;
+      if(item.haystack.includes(tok)) score+=8;
+    });
+    return { item, score };
+  }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,8);
+
+  if(!scored.length){
+    box.style.display='block';
+    box.innerHTML='<div class="search-empty">Sin coincidencias para "'+val+'"</div>';
+    return;
   }
+  box.style.display='block';
+  box.innerHTML=scored.map(({item})=>`
+    <div class="search-result" onclick="openFromSearch('${item.code}')">
+      <span class="search-result-code" style="color:${item.color}">${item.code}</span>
+      <div class="search-result-info">
+        <div class="search-result-name">${item.name}</div>
+        <div class="search-result-process">${item.process}</div>
+      </div>
+    </div>`).join('');
 }
 
-function closeMobileMenu() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('sidebarOverlay');
-  const btn = document.getElementById('hamburgerBtn');
-  sidebar.classList.remove('mobile-open');
-  overlay.classList.remove('open');
-  btn.classList.remove('open');
-  document.body.style.overflow = '';
+function openFromSearch(code){
+  openModal(code);
+  document.getElementById('searchResults').style.display='none';
+  const gs=document.getElementById('globalSearch'); if(gs) gs.value='';
 }
 
-function globalSearchFn(val) {
-  if (val.length < 2) return;
-  // Find matching reports
-  const v = val.toLowerCase();
-  const matches = REPORTS.filter(r =>
-    r.code.toLowerCase().includes(v) ||
-    r.name.toLowerCase().includes(v) ||
-    r.desc.toLowerCase().includes(v) ||
-    r.process.toLowerCase().includes(v)
-  );
-  if (matches.length === 1) {
-    openModal(matches[0].code);
-  }
+// ============ MOBILE MENU ============
+function toggleMobileMenu(){
+  const sidebar=document.getElementById('sidebar');
+  const overlay=document.getElementById('sidebarOverlay');
+  const btn=document.getElementById('hamburgerBtn');
+  if(sidebar.classList.contains('mobile-open')){ closeMobileMenu(); }
+  else { sidebar.classList.add('mobile-open'); overlay.classList.add('open'); btn.classList.add('open'); document.body.style.overflow='hidden'; }
+}
+function closeMobileMenu(){
+  const sidebar=document.getElementById('sidebar');
+  const overlay=document.getElementById('sidebarOverlay');
+  const btn=document.getElementById('hamburgerBtn');
+  if(sidebar) sidebar.classList.remove('mobile-open');
+  if(overlay) overlay.classList.remove('open');
+  if(btn) btn.classList.remove('open');
+  document.body.style.overflow='';
 }
 
 // ============ INIT ============
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', ()=>{
+  SEARCH_INDEX=buildSearchIndex();
   buildQuickTable();
   buildFlowDiagram();
   buildGlosario();
-  buildGridForCategory('allReportsGrid', 'all');
-  buildGridForCategory('recepcionGrid', 'recepcion');
-  buildGridForCategory('almacenajeGrid', 'almacenaje');
-  buildGridForCategory('reposicionGrid', 'reposicion');
-  buildGridForCategory('pickingGrid', 'picking');
-  buildGridForCategory('despachoGrid', 'despacho');
-  buildGridForCategory('servicioGrid', 'servicio');
-  buildGridForCategory('calidadGrid', 'calidad');
+  buildGridForCategory('allReportsGrid','all');
+  buildGridForCategory('recepcionGrid','recepcion');
+  buildGridForCategory('almacenajeGrid','almacenaje');
+  buildGridForCategory('reposicionGrid','reposicion');
+  buildGridForCategory('pickingGrid','picking');
+  buildGridForCategory('despachoGrid','despacho');
+  buildGridForCategory('servicioGrid','servicio');
+  buildGridForCategory('calidadGrid','calidad');
+  buildGridForCategory('demandaGrid','demanda');
+  buildGridForCategory('slotGrid','slot');
   buildScenarios();
   buildAlerts();
 });
