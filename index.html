@@ -687,14 +687,199 @@
   .gap-table tr:last-child td { border-bottom: none; }
   .gap-table .gap-name { color: var(--text); font-weight: 500; }
 
+  /* ============ MOBILE HAMBURGER BUTTON ============ */
+  .mobile-header {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    z-index: 200;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+
+  .mobile-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--accent);
+  }
+
+  .hamburger {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 36px; height: 36px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px;
+    transition: background 0.15s;
+  }
+  .hamburger:hover { background: var(--surface2); }
+  .hamburger span {
+    display: block;
+    width: 18px; height: 2px;
+    background: var(--text-muted);
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .hamburger.open span:nth-child(2) { opacity: 0; }
+  .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Overlay when menu is open on mobile */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 149;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* ============ RESPONSIVE BREAKPOINTS ============ */
+
+  @media (max-width: 768px) {
+
+    /* Show mobile header, hide sidebar by default */
+    .mobile-header { display: flex; }
+
+    .app { flex-direction: column; height: auto; overflow: visible; }
+
+    /* Sidebar becomes a drawer */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 280px;
+      height: 100vh;
+      z-index: 150;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      padding-top: 0;
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
+
+    /* Add top padding so sidebar header isn't behind mobile header */
+    .sidebar-header { padding-top: 60px; }
+
+    /* Main content starts below mobile header */
+    .main {
+      margin-top: 52px;
+      overflow-y: visible;
+      min-height: calc(100vh - 52px);
+    }
+
+    /* Section padding reduced */
+    .section { padding: 20px 16px; }
+    .section-title { font-size: 26px; }
+    .section-subtitle { font-size: 14px; }
+
+    /* Cards full width */
+    .card { padding: 14px 16px; }
+
+    /* Reports grid goes 1 column */
+    .reports-grid { grid-template-columns: 1fr; }
+
+    /* Alerts grid goes 1 column */
+    .alerts-grid { grid-template-columns: 1fr; }
+
+    /* WIP grid goes 1 column */
+    .wip-grid { grid-template-columns: 1fr; }
+
+    /* Quick table: stack columns */
+    .quick-table thead { display: none; }
+    .quick-table tbody tr {
+      display: flex;
+      flex-direction: column;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(42,48,72,0.5);
+    }
+    .quick-table tbody tr:last-child { border-bottom: none; }
+    .quick-table tbody td {
+      padding: 3px 0;
+      border: none;
+    }
+    .question-text { font-size: 13px; margin-bottom: 4px; }
+
+    /* Glossary: stack term and definition */
+    .glossary-item { flex-direction: column; gap: 4px; }
+    .glossary-term { min-width: unset; font-size: 12px; }
+    .glossary-def { font-size: 13px; }
+
+    /* Flow container: vertical stack on mobile */
+    .flow-container { flex-direction: column; gap: 6px; }
+    .flow-step { min-width: unset; border-radius: 8px !important; border-left: 1px solid var(--border) !important; }
+    .flow-step + .flow-step { border-left: 1px solid var(--border) !important; }
+    .flow-step.active-flow { border-color: var(--accent) !important; }
+
+    /* Modal full screen on mobile */
+    .modal {
+      width: 100%;
+      max-width: 100%;
+      max-height: 92vh;
+      border-radius: 16px 16px 0 0;
+      padding: 24px 18px;
+      margin-top: auto;
+    }
+    .modal-overlay {
+      align-items: flex-end;
+    }
+    .modal-title { font-size: 20px; }
+
+    /* Contact card stacked */
+    .contact-card { flex-wrap: wrap; }
+    .contact-reason { margin-left: 0; text-align: left; width: 100%; margin-top: 8px; }
+
+    /* Gap table: hide second column header, make rows readable */
+    .gap-table th:last-child { display: none; }
+    .gap-table td:last-child { display: none; }
+
+    /* Status row stays horizontal but wraps */
+    .status-row { gap: 8px; }
+    .status-badge { min-width: 140px; }
+
+    /* Scenario body */
+    .scenario-header { padding: 12px 14px; }
+    .scenario-body { padding: 0 14px 14px; }
+
+  }
+
+  @media (max-width: 480px) {
+    .section { padding: 16px 12px; }
+    .section-title { font-size: 22px; }
+    .modal { padding: 20px 14px; }
+    .sidebar { width: 100%; }
+    .status-row { flex-direction: column; }
+    .status-badge { min-width: unset; width: 100%; }
+    .report-card { padding: 14px 14px; }
+  }
+
 </style>
 </head>
 <body>
 
+<!-- MOBILE HEADER -->
+<div class="mobile-header">
+  <div class="mobile-logo">CENDIS</div>
+  <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeMobileMenu()"></div>
+
 <div class="app">
 
   <!-- SIDEBAR -->
-  <div class="sidebar">
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <div class="logo">CENDIS<span>Manual de Reportería</span></div>
     </div>
@@ -1607,6 +1792,38 @@ function showSection(name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('sec-' + name).classList.add('active');
   event.currentTarget.classList.add('active');
+  // Close mobile menu when a section is selected
+  closeMobileMenu();
+  // Scroll to top on mobile
+  if (window.innerWidth <= 768) {
+    document.querySelector('.main').scrollTop = 0;
+    window.scrollTo(0, 0);
+  }
+}
+
+function toggleMobileMenu() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const btn = document.getElementById('hamburgerBtn');
+  const isOpen = sidebar.classList.contains('mobile-open');
+  if (isOpen) {
+    closeMobileMenu();
+  } else {
+    sidebar.classList.add('mobile-open');
+    overlay.classList.add('open');
+    btn.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileMenu() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const btn = document.getElementById('hamburgerBtn');
+  sidebar.classList.remove('mobile-open');
+  overlay.classList.remove('open');
+  btn.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function globalSearchFn(val) {
