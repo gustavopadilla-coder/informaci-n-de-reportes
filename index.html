@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario — Reportería CENDIS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2333;
+    --border: #2a3048;
+    --accent: #4f9cf9;
+    --accent2: #f97b4f;
+    --accent3: #4fd9a0;
+    --accent4: #f9c74f;
+    --text: #e8eaf0;
+    --text-muted: #7a8299;
+    --text-dim: #4a5168;
+    --danger: #f96b6b;
+    --warning: #f9c74f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* LAYOUT */
+  .app { display: flex; height: 100vh; overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 260px;
+    min-width: 260px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--text-muted); font-style: italic; font-size: 13px; display: block; margin-top: 2px; }
+
+  .sidebar-search {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-search input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px 8px 32px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237a8299' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 10px center;
+  }
+
+  .sidebar-search input::placeholder { color: var(--text-dim); }
+  .sidebar-search input:focus { border-color: var(--accent); }
+
+  .sidebar-nav { overflow-y: auto; flex: 1; padding: 8px 0; }
+
+  .nav-section { padding: 12px 16px 4px; }
+  .nav-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    cursor: pointer;
+    border-radius: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: rgba(79,156,249,0.08); color: var(--accent); border-left-color: var(--accent); }
+
+  .nav-item .badge {
+    margin-left: auto;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+  }
+
+  .badge-blue { background: rgba(79,156,249,0.15); color: var(--accent); }
+  .badge-orange { background: rgba(249,123,79,0.15); color: var(--accent2); }
+  .badge-green { background: rgba(79,217,160,0.15); color: var(--accent3); }
+  .badge-yellow { background: rgba(249,199,79,0.15); color: var(--accent4); }
+  .badge-red { background: rgba(249,107,107,0.15); color: var(--danger); }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; overflow-y: auto; background: var(--bg); }
+
+  .section { display: none; padding: 40px 48px; max-width: 960px; }
+  .section.active { display: block; }
+
+  .section-header { margin-bottom: 32px; }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .section-subtitle { color: var(--text-muted); font-size: 15px; line-height: 1.5; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+
+  /* QUICK FIND TABLE */
+  .quick-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .quick-table thead th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .quick-table tbody tr { cursor: pointer; transition: background 0.15s; }
+  .quick-table tbody tr:hover { background: var(--surface2); }
+  .quick-table tbody td { padding: 11px 16px; border-bottom: 1px solid rgba(42,48,72,0.5); vertical-align: middle; }
+  .quick-table tbody tr:last-child td { border-bottom: none; }
+
+  .question-text { color: var(--text); font-size: 14px; }
+  .report-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .rtag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(79,156,249,0.1);
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .rtag:hover { background: rgba(79,156,249,0.25); }
+
+  /* FLOW DIAGRAM */
+  .flow-container { display: flex; align-items: stretch; gap: 0; margin: 24px 0; overflow-x: auto; padding-bottom: 8px; }
+
+  .flow-step {
+    flex: 1;
+    min-width: 120px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0;
+    padding: 16px 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .flow-step:first-child { border-radius: 10px 0 0 10px; }
+  .flow-step:last-child { border-radius: 0 10px 10px 0; }
+  .flow-step + .flow-step { border-left: none; }
+  .flow-step:hover { background: var(--surface2); z-index: 1; }
+  .flow-step.active-flow { background: rgba(79,156,249,0.08); border-color: var(--accent); z-index: 2; }
+
+  .flow-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .flow-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .flow-reports { display: flex; flex-wrap: wrap; gap: 3px; }
+  .flow-rtag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: var(--surface2);
+    color: var(--text-muted);
+  }
+
+  /* GLOSARIO */
+  .glossary-search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    margin-bottom: 20px;
+  }
+  .glossary-search:focus { border-color: var(--accent); }
+
+  .glossary-category { margin-bottom: 28px; }
+  .glossary-category-title {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .glossary-item {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(42,48,72,0.4);
+    align-items: baseline;
+  }
+  .glossary-item:last-child { border-bottom: none; }
+  .glossary-term {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 180px;
+    flex-shrink: 0;
+  }
+  .glossary-def { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+  .glossary-item.hidden { display: none; }
+
+  /* REPORTES FICHAS */
+  .reports-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+  .report-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .report-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--card-accent, var(--accent));
+  }
+  .report-card:hover { border-color: var(--card-accent, var(--accent)); background: var(--surface2); }
+
+  .report-card-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--card-accent, var(--accent));
+    margin-bottom: 4px;
+  }
+  .report-card-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .report-card-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+  .report-card-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--text-dim);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 32px;
+    position: relative;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+
+  .modal-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .modal-process {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-section { margin-bottom: 20px; }
+  .modal-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  .modal-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+  .fields-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .field-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .questions-list { list-style: none; }
+  .questions-list li {
+    padding: 7px 0;
+    font-size: 14px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(42,48,72,0.4);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .questions-list li::before { content: '→'; color: var(--accent); flex-shrink: 0; margin-top: 1px; }
+  .questions-list li:last-child { border-bottom: none; }
+
+  .crosses-list { list-style: none; }
+  .crosses-list li {
+    padding: 7px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(42,48,72,0.4);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
+  }
+  .crosses-list li:last-child { border-bottom: none; }
+  .cross-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(79,156,249,0.1);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .cross-code:hover { background: rgba(79,156,249,0.25); }
+
+  .alert-box {
+    background: rgba(249,199,79,0.08);
+    border: 1px solid rgba(249,199,79,0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--warning);
+    margin-bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  /* BUSQUEDAS */
+  .scenario-list { display: flex; flex-direction: column; gap: 12px; }
+  .scenario {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .scenario-header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.15s;
+  }
+  .scenario-header:hover { background: var(--surface2); }
+  .scenario-icon { font-size: 18px; }
+  .scenario-q { font-size: 14px; font-weight: 500; color: var(--text); flex: 1; }
+  .scenario-chevron { color: var(--text-dim); transition: transform 0.2s; font-size: 12px; }
+  .scenario.open .scenario-chevron { transform: rotate(90deg); }
+
+  .scenario-body {
+    display: none;
+    padding: 0 20px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .scenario.open .scenario-body { display: block; padding-top: 14px; }
+
+  .step-list { list-style: none; counter-reset: steps; }
+  .step-list li {
+    counter-increment: steps;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 7px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(42,48,72,0.3);
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before {
+    content: counter(steps);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ALERTAS PAGE */
+  .alerts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .alert-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .alert-card.warning { border-color: rgba(249,199,79,0.3); }
+  .alert-card.danger { border-color: rgba(249,107,107,0.3); }
+  .alert-card.info { border-color: rgba(79,156,249,0.3); }
+
+  .alert-card-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .alert-card.warning .alert-card-code { color: var(--warning); }
+  .alert-card.danger .alert-card-code { color: var(--danger); }
+  .alert-card.info .alert-card-code { color: var(--accent); }
+
+  .alert-card-msg { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+
+  /* PRODUCTIVITY TABLE */
+  .prod-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .prod-table th {
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .prod-table td { padding: 11px 14px; border-bottom: 1px solid rgba(42,48,72,0.4); vertical-align: middle; }
+  .prod-table tr:last-child td { border-bottom: none; }
+  .prod-table .na { color: var(--text-dim); font-style: italic; font-size: 12px; }
+
+  /* WIP STEPS */
+  .wip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .wip-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .wip-box.block { border-color: rgba(249,107,107,0.3); }
+  .wip-box.unblock { border-color: rgba(79,217,160,0.3); }
+  .wip-box-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wip-box.block .wip-box-title { color: var(--danger); }
+  .wip-box.unblock .wip-box-title { color: var(--accent3); }
+
+  .wip-steps { list-style: none; counter-reset: wip; }
+  .wip-steps li {
+    counter-increment: wip;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 7px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    border-bottom: 1px solid rgba(42,48,72,0.3);
+  }
+  .wip-steps li:last-child { border-bottom: none; }
+  .wip-steps li::before {
+    content: counter(wip);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .wip-box.block .wip-steps li::before { background: rgba(249,107,107,0.15); color: var(--danger); }
+  .wip-box.unblock .wip-steps li::before { background: rgba(79,217,160,0.15); color: var(--accent3); }
+  .wip-steps li strong { color: var(--text); }
+
+  /* STATUS BADGES */
+  .status-row { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    flex: 1;
+    min-width: 160px;
+  }
+  .status-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 600;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .status-code.i { background: rgba(79,217,160,0.15); color: var(--accent3); }
+  .status-code.x { background: rgba(249,107,107,0.15); color: var(--danger); }
+  .status-code.t { background: rgba(249,199,79,0.15); color: var(--warning); }
+  .status-info { flex: 1; }
+  .status-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .status-desc { font-size: 12px; color: var(--text-muted); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* CONTACT CARD */
+  .contact-card {
+    background: linear-gradient(135deg, rgba(79,156,249,0.08), rgba(79,156,249,0.03));
+    border: 1px solid rgba(79,156,249,0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .contact-avatar {
+    width: 44px; height: 44px;
+    background: rgba(79,156,249,0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .contact-info .name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .contact-info .role { font-size: 13px; color: var(--text-muted); }
+  .contact-reason { margin-left: auto; font-size: 12px; color: var(--text-dim); text-align: right; }
+
+  /* GAP TABLE */
+  .gap-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .gap-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .gap-table td { padding: 12px 16px; border-bottom: 1px solid rgba(42,48,72,0.4); font-size: 13px; color: var(--text-muted); }
+  .gap-table tr:last-child td { border-bottom: none; }
+  .gap-table .gap-name { color: var(--text); font-weight: 500; }
+
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">CENDIS<span>Manual de Reportería</span></div>
+    </div>
+    <div class="sidebar-search">
+      <input type="text" id="globalSearch" placeholder="Buscar reporte o término..." oninput="globalSearchFn(this.value)">
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section"><span class="nav-section-label">Inicio</span></div>
+      <div class="nav-item active" onclick="showSection('inicio')">🏠 ¿Por dónde empiezo?</div>
+      <div class="nav-item" onclick="showSection('flujo')">🔄 Flujo del CENDIS</div>
+
+      <div class="nav-section"><span class="nav-section-label">Referencia</span></div>
+      <div class="nav-item" onclick="showSection('glosario')">📖 Glosario de Términos</div>
+      <div class="nav-item" onclick="showSection('reportes')">📋 Todos los Reportes</div>
+
+      <div class="nav-section"><span class="nav-section-label">Por Proceso</span></div>
+      <div class="nav-item" onclick="showSection('recepcion')">📥 Recepción <span class="badge badge-blue">7</span></div>
+      <div class="nav-item" onclick="showSection('almacenaje')">🏗️ Almacenaje <span class="badge badge-green">6</span></div>
+      <div class="nav-item" onclick="showSection('reposicion')">🔄 Reposición <span class="badge badge-orange">3</span></div>
+      <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
+      <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">6</span></div>
+      <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">4</span></div>
+      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">2</span></div>
+
+      <div class="nav-section"><span class="nav-section-label">Guías</span></div>
+      <div class="nav-item" onclick="showSection('busquedas')">🔍 Búsquedas Clave</div>
+      <div class="nav-item" onclick="showSection('wip')">⚙️ Procedimiento WIP</div>
+      <div class="nav-item" onclick="showSection('alertas')">⚠️ Alertas & Gaps <span class="badge badge-red">4</span></div>
+    </nav>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- INICIO -->
+    <div id="sec-inicio" class="section active">
+      <div class="section-header">
+        <div class="section-title">¿Qué quieres saber?</div>
+        <div class="section-subtitle">Encuentra el reporte correcto para cada pregunta del día a día.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Buscador rápido</div>
+        <table class="quick-table">
+          <thead><tr><th>Si necesitas saber...</th><th>Usa estos reportes</th></tr></thead>
+          <tbody id="quickTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FLUJO -->
+    <div id="sec-flujo" class="section">
+      <div class="section-header">
+        <div class="section-title">Flujo del CENDIS</div>
+        <div class="section-subtitle">El CENDIS opera en 6 etapas. Haz clic en cada una para ver sus reportes.</div>
+      </div>
+      <div class="flow-container" id="flowContainer"></div>
+      <div id="flowDetail" class="card" style="display:none;"></div>
+    </div>
+
+    <!-- GLOSARIO -->
+    <div id="sec-glosario" class="section">
+      <div class="section-header">
+        <div class="section-title">Glosario de Términos</div>
+        <div class="section-subtitle">Definiciones simples de todos los términos que encontrarás en los reportes.</div>
+      </div>
+      <input type="text" class="glossary-search" placeholder="Buscar término..." oninput="filterGlosario(this.value)">
+      <div id="glosarioContainer"></div>
+    </div>
+
+    <!-- TODOS LOS REPORTES -->
+    <div id="sec-reportes" class="section">
+      <div class="section-header">
+        <div class="section-title">Todos los Reportes</div>
+        <div class="section-subtitle">Haz clic en cualquier reporte para ver su ficha completa.</div>
+      </div>
+      <div class="reports-grid" id="allReportsGrid"></div>
+    </div>
+
+    <!-- RECEPCION -->
+    <div id="sec-recepcion" class="section">
+      <div class="section-header">
+        <div class="section-title">📥 Recepción</div>
+        <div class="section-subtitle">Desde que el proveedor avisa que viene hasta que la mercancía queda registrada en el sistema.</div>
+      </div>
+      <div class="reports-grid" id="recepcionGrid"></div>
+    </div>
+
+    <!-- ALMACENAJE -->
+    <div id="sec-almacenaje" class="section">
+      <div class="section-header">
+        <div class="section-title">🏗️ Almacenaje</div>
+        <div class="section-subtitle">La mercancía recibida se lleva a su ubicación definitiva o temporal en el almacén.</div>
+      </div>
+      <div class="reports-grid" id="almacenajeGrid"></div>
+    </div>
+
+    <!-- REPOSICION -->
+    <div id="sec-reposicion" class="section">
+      <div class="section-header">
+        <div class="section-title">🔄 Reposición</div>
+        <div class="section-subtitle">Cuando un puesto de picking baja del ROP, se genera una tarea de reposición desde almacenaje.</div>
+      </div>
+      <div class="reports-grid" id="reposicionGrid"></div>
+    </div>
+
+    <!-- PICKING -->
+    <div id="sec-picking" class="section">
+      <div class="section-header">
+        <div class="section-title">🛒 Picking e Inventario en Puesto</div>
+        <div class="section-subtitle">Los operarios recogen productos de sus puestos y los colocan en contenedores para cada tienda.</div>
+      </div>
+      <div class="reports-grid" id="pickingGrid"></div>
+    </div>
+
+    <!-- DESPACHO -->
+    <div id="sec-despacho" class="section">
+      <div class="section-header">
+        <div class="section-title">🚚 Despacho</div>
+        <div class="section-subtitle">Los contenedores se organizan, cargan y preparan para salir al camión.</div>
+      </div>
+      <div class="reports-grid" id="despachoGrid"></div>
+    </div>
+
+    <!-- SERVICIO -->
+    <div id="sec-servicio" class="section">
+      <div class="section-header">
+        <div class="section-title">📊 Servicio & Fill Rate</div>
+        <div class="section-subtitle">El camión sale y se mide el nivel de cumplimiento hacia las tiendas.</div>
+      </div>
+      <div class="reports-grid" id="servicioGrid"></div>
+    </div>
+
+    <!-- CALIDAD -->
+    <div id="sec-calidad" class="section">
+      <div class="section-header">
+        <div class="section-title">🔍 Calidad & Inventario</div>
+        <div class="section-subtitle">Control de precisión de inventario, ajustes y conteos cíclicos.</div>
+      </div>
+      <div class="reports-grid" id="calidadGrid"></div>
+    </div>
+
+    <!-- BUSQUEDAS CLAVE -->
+    <div id="sec-busquedas" class="section">
+      <div class="section-header">
+        <div class="section-title">Búsquedas Clave</div>
+        <div class="section-subtitle">Guías paso a paso para las situaciones más comunes del día a día.</div>
+      </div>
+      <div class="scenario-list" id="scenarioList"></div>
+    </div>
+
+    <!-- WIP -->
+    <div id="sec-wip" class="section">
+      <div class="section-header">
+        <div class="section-title">⚙️ Procedimiento WIP</div>
+        <div class="section-subtitle">Cómo bloquear y desbloquear contenedores en el sistema WMS.</div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-title">Estados de contenedores en R033</div>
+        <div class="status-row">
+          <div class="status-badge">
+            <div class="status-code i">I</div>
+            <div class="status-info">
+              <div class="status-name">Disponible</div>
+              <div class="status-desc">Listo para usar</div>
+            </div>
+          </div>
+          <div class="status-badge">
+            <div class="status-code x">X</div>
+            <div class="status-info">
+              <div class="status-name">Bloqueado</div>
+              <div class="status-desc">Por vencimiento</div>
+            </div>
+          </div>
+          <div class="status-badge">
+            <div class="status-code t">T</div>
+            <div class="status-info">
+              <div class="status-name">WIP</div>
+              <div class="status-desc">Problema detectado</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wip-grid">
+        <div class="wip-box block">
+          <div class="wip-box-title">🔒 Para BLOQUEAR un contenedor</div>
+          <ol class="wip-steps">
+            <li>Entrar al sistema <strong>WMS</strong></li>
+            <li>Buscar <strong>"WIP"</strong> en el sistema</li>
+            <li>Seleccionar <strong>"Aplicar código WIP"</strong></li>
+            <li>Buscar el <strong>contenedor</strong></li>
+            <li>Aplicar <strong>código problema</strong></li>
+            <li><strong>Crear registro</strong> ← esto bloquea</li>
+          </ol>
+        </div>
+        <div class="wip-box unblock">
+          <div class="wip-box-title">🔓 Para DESBLOQUEAR un contenedor</div>
+          <ol class="wip-steps">
+            <li>Entrar al sistema <strong>WMS</strong></li>
+            <li>Buscar <strong>"WIP"</strong> en el sistema</li>
+            <li>Seleccionar <strong>"Aplicar código WIP"</strong></li>
+            <li>Buscar el <strong>contenedor</strong></li>
+            <li>Aplicar <strong>código problema</strong></li>
+            <li><strong>Suprimir registro</strong> ← esto desbloquea</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div id="sec-alertas" class="section">
+      <div class="section-header">
+        <div class="section-title">⚠️ Alertas & Gaps</div>
+        <div class="section-subtitle">Reportes con restricciones conocidas y funcionalidades pendientes.</div>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <div class="card-title" style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;">Restricciones conocidas</div>
+        <div class="alerts-grid" id="alertsGrid"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div style="margin-bottom:28px;">
+        <div class="card-title" style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;">🔴 Reportes que no existen aún</div>
+        <table class="gap-table">
+          <thead><tr><th>Reporte faltante</th><th>Por qué sería útil</th></tr></thead>
+          <tbody>
+            <tr><td class="gap-name">Productividad individual de almacenaje</td><td>R092 solo muestra el total del equipo, no se puede ver por persona</td></tr>
+            <tr><td class="gap-name">Productividad total de picking</td><td>R049 solo muestra detalle individual, no hay vista consolidada del equipo</td></tr>
+            <tr><td class="gap-name">Productividad total de recepción</td><td>R085 solo muestra detalle individual, no hay vista consolidada</td></tr>
+            <tr><td class="gap-name">Ítems +48h sin despacho (R070)</td><td>El reporte existe pero está inactivo actualmente</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-avatar">👩‍💼</div>
+        <div class="contact-info">
+          <div class="name">María Parra</div>
+          <div class="role">Responsable de Certificación de Reportes</div>
+        </div>
+        <div class="contact-reason">Solicitar reportes nuevos<br>Reportar datos incorrectos<br>Certificar información</div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modalContent">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ============ DATA ============
+const REPORTS = [
+  {
+    code: 'ASN', name: 'Acuse de Recibo ASN', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Confirma que lo que el proveedor dijo que envió coincide con lo que llegó. Requiere número de cita.',
+    alert: '⚠️ Debes ingresar el número de cita. Sin ese dato el reporte sale en cero.',
+    fields: ['Fecha del informe', 'Gran Total Cita'],
+    questions: ['¿Llegó todo lo que el proveedor avisó?', '¿Hubo diferencias entre el aviso y la entrega?', '¿Cuánto se recibió en esta cita?'],
+    crosses: [['R000','Validar unidades recibidas vs acuse ASN'], ['R042','Cruzar contenedores en puerta con su ASN'], ['R117','Comparar acuse vs contenedores realmente recibidos'], ['R033','Confirmar que lo recibido llegó a almacenaje']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R000', name: 'Recepción y Plan de Almacenaje', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Registro detallado de ítems recibidos con dimensiones, configuración de paleta y plan de almacenaje.',
+    fields: ['ITEM','DESCRIPCIÓN','UNIDADES RECIBIDAS','SUB_BULTO','CASE PACK','ULTIMO SLOT','ULTIMA ZONA','PLAN DE ALMACENAJE','ALTO COSTO','ULTIMA FECHA RECEPCIÓN','FECHA CITA','SOH TIENDAS','STORE OM','TI','HI','VENDEDOR','TIPO DISTRIBUCIÓN','TIENDAS ASOCIADAS','ITEM BULK PICK','UND/PALETA','BULTOS/PALETA','DIMENSIONES ITEM','DIMENSIONES CASE','PESO CASE','PESO UNIDAD','UNIDADES','ORDER NUMBER','UBICACION ITEM'],
+    questions: ['¿Qué se recibió en una cita?', '¿Cuál es el plan de almacenaje del ítem?', '¿Cuántas unidades caben en una paleta?', '¿El ítem es de alto costo o bulk pick?'],
+    crosses: [['ASN','Validar acuse de recibo vs lo planificado'], ['R042','Seguimiento desde puerta de recepción'], ['R033','Confirmar que lo recibido pasó a almacenaje'], ['R012','Comparar con maestro de ítems'], ['R117','Contrastar plan vs detalle real recibido']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R042', name: 'Contenedores en Puerta Recepción', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Mercancía física en el muelle de recepción esperando ser procesada.',
+    fields: ['ITEM_ID','DESCRIPCION','PUERTA','CLASE','UBICACION','UNIDADES','CONTENEDOR','Fecha_Recepción'],
+    questions: ['¿Qué hay parado en la puerta ahora mismo?', '¿Hace cuánto llegó esa mercancía?', '¿En qué puerta está?'],
+    crosses: [['ASN','Validar acuse vs lo que está en puerta'], ['R000','Relacionar con plan de almacenaje'], ['R033','Trazar flujo puerta → almacenaje'], ['R085','Ver si hay personal disponible para recibir']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R111', name: 'Cantidad de Contenedores Recibidos', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Resumen de cuántos contenedores llegaron por orden de compra y fecha.',
+    fields: ['ORDER_COMPRA','FECHA_RECEPCION','CANTIDAD_CONTENEDOR'],
+    questions: ['¿Cuántos contenedores recibimos hoy?', '¿Qué órdenes de compra llegaron esta semana?', '¿Cuáles órdenes tienen mayor volumen?'],
+    crosses: [['R117','Ver detalle de cada contenedor de la orden'], ['R042','Validar contenedores en puerta vs ya recibidos'], ['R085','Cruzar con productividad de recepción'], ['ASN','Comparar acuse vs contenedores recibidos']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R117', name: 'Contenedores Recibidos', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Detalle completo de cada contenedor: ítem, unidades, quién lo recibió, cuánto tardó y cuánto costó.',
+    fields: ['ITEM','DESCRIPCION','COSTO UNIT','CONTENEDOR','UNIDADES','BULTOS','LOTE','USUARIO','FECHA RECEPCION','APERTURA CITA','CIERRE CITA','COSTO TOTAL'],
+    questions: ['¿Qué contenedor recibió el operario X?', '¿Cuánto tardó la cita de recepción?', '¿Cuánto costó la mercancía de esa orden?'],
+    crosses: [['R085','Productividad del operario que lo recibió'], ['R033','Trazar contenedor recibido → almacenaje'], ['R025','Ver ajustes posteriores a la recepción'], ['R111','Comparar totales por orden de compra']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R085', name: 'Productividad Recepción por Usuario', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Cuántos contenedores recibe cada operario por hora con tiempos reales de jornada.',
+    fields: ['DIA','USUARIO','INICIO','FIN','CONT. RECIBIDOS','CONT/H'],
+    questions: ['¿Quién es el operario más productivo en recepción?', '¿Cuántas horas trabajó cada uno?', '¿Cómo ha variado la productividad esta semana?'],
+    crosses: [['R117','Ver qué recibió cada operario'], ['R042','Ver si hay acumulación en puerta'], ['R111','Cruzar volumen recibido con productividad']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R034', name: 'Resumen Devoluciones y Faltantes', process: 'Recepción', color: '#4f9cf9',
+    desc: 'Resumen ejecutivo de devoluciones y faltantes por proveedor.',
+    alert: '⚠️ Solo tiene 3 campos. Es vista ejecutiva, no sirve para análisis detallado.',
+    fields: ['PROVEEDOR','DEVOLUCIONES','FALTANTES'],
+    questions: ['¿Qué proveedor tiene más problemas de entrega?', '¿Cuánto nos faltó de cada proveedor?'],
+    crosses: [['R117','Ver detalle de ítems afectados'], ['R012','Ver qué categorías afecta por proveedor'], ['R025','Ver si generó ajustes de costo']],
+    category: 'recepcion'
+  },
+  {
+    code: 'R033', name: 'Inventario de Almacenaje', process: 'Almacenaje', color: '#4fd9a0',
+    desc: 'Todo lo que hay guardado en el almacén: dónde está, en qué estado, cuándo vence y quién lo guardó.',
+    fields: ['UBICACIÓN','ID ARTÍCULO','DESCRIPCIÓN','ID CONTENEDOR','ESTADO','UNIDADES','BULTOS','LOTE','USUARIO ALMACENAJE','FECHA RECIBIDO','FECHA ALMACENADO','FECHA VENCIMIENTO','ZONA'],
+    questions: ['¿Dónde está guardado el ítem X?', '¿Qué productos están por vencer?', '¿Qué contenedores están bloqueados?', '¿Quién guardó este contenedor y cuándo?'],
+    crosses: [['R031','Ver si hace falta reponer al puesto'], ['R053','Ver qué sigue en temporales'], ['R020','Cruzar con estatus de la ubicación'], ['R150','Validar con conteos cíclicos']],
+    category: 'almacenaje'
+  },
+  {
+    code: 'R053', name: 'Ubicaciones Temporales', process: 'Almacenaje', color: '#4fd9a0',
+    desc: 'Mercancía en ubicaciones provisionales que aún no tienen un lugar definitivo asignado.',
+    fields: ['ITEM','DESCRIPCIÓN','UBICACIÓN','CLASE','CANTIDAD','CONTENEDOR','FECHA'],
+    questions: ['¿Cuánto tiempo lleva este ítem en temporal?', '¿Qué mercancía sigue sin ubicar?'],
+    crosses: [['R012','Ver si tiene plan de almacenaje definido'], ['R033','Cruzar con inventario total'], ['R020','Validar estatus de ubicaciones temporales'], ['R042','Trazar flujo puerta → temporal → almacenaje']],
+    category: 'almacenaje'
+  },
+  {
+    code: 'R003', name: 'Detalle de Ubicaciones Logísticas', process: 'Almacenaje', color: '#4fd9a0',
+    desc: 'Contenido detallado de cada ubicación: qué hay, en qué cesta, cuál es el destino y cuánto vale.',
+    fields: ['UBICACIÓN','CONTENEDOR','CESTA','ESTATUS','DESTINO','ID USUARIO','ITEM','DESCRIPCIÓN','UNIDADES','BULTOS','ULTIMA MODIFICACIÓN','FECHA CREACIÓN','SUPPLIER','COSTO UNITARIO','COSTO TOTAL','NOTA'],
+    questions: ['¿Qué hay exactamente en la ubicación X-Y-Z?', '¿Cuánto cuesta el contenido de esa ubicación?', '¿Hacia qué tienda va esa mercancía?'],
+    crosses: [['R020','Ver estatus y tipo de la ubicación'], ['R081','Detectar ítems con doble ubicación'], ['R033','Complementar con lote y vencimiento']],
+    category: 'almacenaje'
+  },
+  {
+    code: 'R020', name: 'Detalle de Ubicaciones', process: 'Almacenaje', color: '#4fd9a0',
+    desc: 'Estado de cada ubicación: activa, bloqueada o vacía, y cuándo fue contada por última vez.',
+    fields: ['UBICACIÓN','ZONA','TIPO_UBICACIÓN','UBICACIÓN STATUS','FECHA ULTIMO CONTEO','CYCLE COUNT STATUS','ITEM','LOCATION TYPE'],
+    questions: ['¿Esta ubicación está disponible?', '¿Cuándo fue el último conteo?', '¿Cuántas ubicaciones vacías hay en la zona X?'],
+    crosses: [['R150','Cruzar cycle count status vs conteos efectuados'], ['R033','Ver qué hay en cada ubicación'], ['R081','Ver si ítems con doble ubicación tienen conteos pendientes']],
+    category: 'almacenaje'
+  },
+  {
+    code: 'R092', name: 'Productividad Almacenaje Total CENDIS', process: 'Almacenaje', color: '#4fd9a0',
+    desc: 'Cuántos contenedores almacenó el equipo completo en el día y a qué velocidad.',
+    alert: '⚠️ Solo muestra el total del equipo. No hay desglose por operario.',
+    fields: ['FECHA','INICIO','FIN','CONT. ALMACENADOS','CONT/H'],
+    questions: ['¿Cuántos contenedores almacenamos hoy?', '¿A qué ritmo va el equipo?', '¿Cuántas horas trabajó el equipo?'],
+    crosses: [['R085','Comparar con el ritmo de recepción'], ['R053','Ver si se acumulan temporales'], ['R117','Cruzar con contenedores recibidos por fecha']],
+    category: 'almacenaje'
+  },
+  {
+    code: 'R081', name: 'Índices de Fallas y Doble Ubicación', process: 'Almacenaje', color: '#4fd9a0',
+    desc: 'Detecta ítems guardados en más de una ubicación y mide el % de fallas en el servicio a tiendas.',
+    fields: ['UND SOLICITADAS POR TIENDA','UND EN SISTEMA','% DE FALLAS','ITEM','ZONA','UBICACION','TIPO'],
+    questions: ['¿Qué ítems tienen doble ubicación?', '¿Cuál es el % de fallas de hoy?', '¿Cuántas unidades pedidas no tenían stock en sistema?'],
+    crosses: [['R020','Ver si hay conteos cíclicos pendientes en esas ubicaciones'], ['R003','Verificar contenido real de las ubicaciones duplicadas'], ['R033','Cruzar con inventario en almacenaje'], ['R121','Correlacionar cancelaciones con índice de fallas']],
+    category: 'almacenaje'
+  },
+  {
+    code: 'R119', name: 'Tareas de Reposición Pendientes', process: 'Reposición', color: '#f97b4f',
+    desc: 'Todas las tareas de reposición: quién las tiene, cuánto tiempo llevan y de dónde a dónde van.',
+    fields: ['TASK_ID','USUARIO','ACTIVIDAD','CONTENEDOR','PUESTO DESPACHO','ITEM ID','ZONA DESTINO','ZONA ORIGEN','UNIDADES','BULTOS','FECHA/HORA PROCESO','FECHA/HORA INICIO','FECHA/HORA FIN'],
+    questions: ['¿Cuántas reposiciones están pendientes ahora?', '¿Cuánto tiempo tarda cada tarea?', '¿Qué operario tiene más tareas asignadas?'],
+    crosses: [['R031','Ver puestos bajo ROP que generaron las tareas'], ['R033','Confirmar stock disponible en origen'], ['R093','Ver productividad del equipo de reposición']],
+    category: 'reposicion'
+  },
+  {
+    code: 'R093', name: 'Productividad Reposición por Usuario', process: 'Reposición', color: '#f97b4f',
+    desc: 'Cuántos bultos y paletas repone cada operario por hora.',
+    fields: ['FECHA','USUARIO','INICIO','FIN','CANTIDAD BULTOS','BULTO HH','CANTIDAD PALETAS','PALETA HH'],
+    questions: ['¿Quién es el operario más productivo en reposición?', '¿Cuántas horas trabajó cada uno?', '¿Qué operario mueve más paletas?'],
+    crosses: [['R094','Comparar con el total del equipo'], ['R119','Cruzar tareas asignadas vs ejecutadas'], ['R031','Ver si los puestos quedaron bien abastecidos']],
+    category: 'reposicion'
+  },
+  {
+    code: 'R094', name: 'Productividad Reposición Total CENDIS', process: 'Reposición', color: '#f97b4f',
+    desc: 'Cuántos bultos y paletas repuso el equipo completo en el día.',
+    fields: ['FECHA','INICIO','FIN','CANTIDAD BULTOS','BULTOS H','CANTIDAD PALETAS','PALETA HH'],
+    questions: ['¿Cuánto repusimos hoy en total?', '¿A qué ritmo va el equipo de reposición?'],
+    crosses: [['R093','Ver detalle por persona'], ['R119','Cruzar tareas generadas vs productividad ejecutada'], ['R031','Verificar impacto en niveles de inventario']],
+    category: 'reposicion'
+  },
+  {
+    code: 'R031', name: 'Inventario Picking por Puesto', process: 'Picking', color: '#4f9cf9',
+    desc: 'Cuánto hay en cada puesto de picking, si está bajo el ROP y cuánto cabe en ese puesto.',
+    fields: ['ITEM','UBICACION DE DESPACHO','ZONA','NOMBRE','INVENTARIO EN PUESTO','DEPARTAMENTO','CAPACIDAD EN BULTOS','ROP EN BULTO','TI','HI','DIMENSIONES UNIDAD','DIMENSIONES BULTO','CASE PACK','UNIDAD DE DESPACHO','UNIDADES DISTRIBUIDAS'],
+    questions: ['¿Qué puestos necesitan reposición urgente?', '¿Cuánto inventario tiene el puesto del ítem X?', '¿Cuál es la capacidad del puesto?'],
+    crosses: [['R033','Ver si hay stock en almacenaje para reponer'], ['R119','Ver si ya hay una tarea de reposición generada'], ['R120','Cruzar inventario en puesto vs demanda actual']],
+    category: 'picking'
+  },
+  {
+    code: 'R120', name: 'Detalle por Ítem CENDIS', process: 'Picking', color: '#4f9cf9',
+    desc: 'Estado de cada ítem: cuánto hay en el puesto, cuánto se está pidiendo y cuántas tiendas lo solicitan.',
+    fields: ['ZONA','PUESTO DESPACHO','ÍTEM','DESCRIPCIÓN','UNIDADES EN PUESTO','UNIDADES PEDIDAS','BULTOS','TIPO PEDIDOS','CANT TIENDAS SOLICITANTES'],
+    questions: ['¿Hay suficiente stock para cubrir la demanda?', '¿Cuántas tiendas están pidiendo este ítem?', '¿Cuál es la demanda actual del ítem X?'],
+    crosses: [['R081','Ver si los ítems con brecha están en el índice de fallas'], ['R122','Ver si terminan cancelándose'], ['R031','Cruzar con ROP del puesto']],
+    category: 'picking'
+  },
+  {
+    code: 'R049', name: 'Productividad Pickers', process: 'Picking', color: '#4f9cf9',
+    desc: 'Cuántas líneas pickea cada operario por hora. Tiene vista de equipo e individual.',
+    fields: ['LÍNEAS (equipo)','HORAS (equipo)','PRODUCTIVIDAD (equipo)','FECHA','ID USUARIO','LINEAS','MIN_DATE','MAX_DATE','HORAS','PRODUCTIVIDAD/HORA'],
+    questions: ['¿Quién es el picker más productivo?', '¿Cuántas horas trabajó el equipo hoy?', '¿Cómo va la productividad vs días anteriores?'],
+    crosses: [['R130','Ver qué pickeó cada operario en detalle'], ['R049a','Relacionar productividad con fill rate'], ['R140','Ver volumen de líneas por ítem']],
+    category: 'picking'
+  },
+  {
+    code: 'R140', name: 'Líneas Generadas por Día', process: 'Picking', color: '#4f9cf9',
+    desc: 'Histórico de picking por ítem: cuántos días se pickeó, líneas y unidades promedio por día.',
+    fields: ['ITEM','DESCRIPCION','DAYS_PICK','LNS','AVG_LNS','UNITS','AVG_UNITS'],
+    questions: ['¿Cuáles son los ítems de mayor rotación?', '¿Cuál es el promedio diario del ítem X?', '¿El ROP está bien calibrado para la rotación real?'],
+    crosses: [['R031','Comparar promedio diario vs inventario en puesto'], ['R012','Validar que el ROP refleja la demanda real'], ['R120','Comparar histórico vs demanda actual']],
+    category: 'picking'
+  },
+  {
+    code: 'R004', name: 'Resumen de Carga', process: 'Despacho', color: '#f97b4f',
+    desc: 'Estado consolidado de toda la carga: cuánto falta por despachar, cuánto está siendo cargado y cuánto está listo.',
+    fields: ['OLA','DESTINO','Por Despachar (cestas/bultos/paletas/rollers)','Por Cargar (cestas/bultos/paletas/rollers)','Cargados (cestas/bultos/paletas/rollers)'],
+    questions: ['¿Cómo va el avance de carga de la OLA actual?', '¿Cuántas paletas y cestas hay por tienda?', '¿Qué tiendas van más atrasadas?'],
+    crosses: [['R080','Ver el avance por zona'], ['R130','Ver el detalle ítem por ítem'], ['R009','Detallar carga pendiente por tienda específica'], ['R122','Cruzar unidades pendientes con contenedores']],
+    category: 'despacho'
+  },
+  {
+    code: 'R009', name: 'Carga de Camiones', process: 'Despacho', color: '#f97b4f',
+    desc: 'Contenedores y bultos pendientes de cargar para una tienda específica.',
+    alert: '⚠️ Filtrar siempre por tienda. Sin filtro los datos no son útiles.',
+    fields: ['TIENDA','CÓDIGO DEL CONTENEDOR','TIPO DE DESPACHO','DESCRIPCIÓN DE LA ZONA'],
+    questions: ['¿Qué falta cargar para la tienda X?', '¿Qué tipo de despacho es?', '¿En qué zona están esos contenedores?'],
+    crosses: [['R004','Ver resumen general de carga'], ['R013','Ver qué ya está listo pero no ha salido'], ['R049a','Relacionar carga pendiente con fill rate de la tienda']],
+    category: 'despacho'
+  },
+  {
+    code: 'R013', name: 'Contenedores Sin Enviar', process: 'Despacho', color: '#f97b4f',
+    desc: 'Contenedores listos dentro del CENDIS que aún no han salido en camión hacia la tienda.',
+    fields: ['CONTENEDOR','TIENDA','CESTA','UNIDADES','ESTATUS','UBICACION','ZONA','OLA','FECHA CREACION'],
+    questions: ['¿Qué contenedores están listos pero no han salido?', '¿Hace cuánto se crearon esos contenedores?', '¿Para qué tienda son?'],
+    crosses: [['R049a','Ver si afecta el fill rate enviado'], ['R004','Cruzar con resumen general de carga'], ['R130','Cruzar detalle de asignaciones vs los que no salieron']],
+    category: 'despacho'
+  },
+  {
+    code: 'R080', name: 'Contenedores Generados por Zona', process: 'Despacho', color: '#f97b4f',
+    desc: 'Avance del despacho por zona y nivel en tiempo real, con % de avance y desglose MED/MISC.',
+    fields: ['FECHA','HORA','ZONA','NIVEL','CONT GENERADAS','CONT DESPACHADAS','CONT PENDIENTES','% AVANCE','CONT ENVIADAS','LINEAS GENERADAS','LINEAS DESPACHADAS','PROM LÍNEAS/CONTENEDOR','MED','MISC','CONT DESP MED/MISC','CONT ENV MED/MISC'],
+    questions: ['¿Qué zona va más atrasada?', '¿Cuál es el % de avance general?', '¿Cuántos contenedores MED vs MISC se han despachado?'],
+    crosses: [['R095','Comparar zonas entre sí'], ['R049','Ver si hay suficientes pickers en zonas atrasadas'], ['R130','Cruzar avance por zona con detalle de asignaciones']],
+    category: 'despacho'
+  },
+  {
+    code: 'R095', name: 'Detalle Contenedores por Zona', process: 'Despacho', color: '#f97b4f',
+    desc: 'Resumen de contenedores y unidades por zona. Mejor para comparar zonas entre sí (sin snapshot).',
+    fields: ['ZONA','CONT GENERADAS','CONT DESPACHADAS','CONT ENVIADAS','LINEAS GENERADAS','LINEAS DESPACHADAS','PROM LÍNEAS/CONT','UNIDADES ASIGNADAS','UNIDADES DESPACHADAS'],
+    questions: ['¿Qué zona tiene mayor brecha entre asignado y despachado?', '¿Cuál es el promedio de líneas por contenedor por zona?'],
+    crosses: [['R080','Para monitoreo en tiempo real con % avance'], ['R130','Validar detalle de asignaciones vs totales por zona']],
+    category: 'despacho'
+  },
+  {
+    code: 'R130', name: 'Detalle Asignado por OLA/Tienda', process: 'Despacho', color: '#f97b4f',
+    desc: 'Detalle completo de cada despacho: qué se asignó, qué se despachó, para qué tienda y por quién.',
+    fields: ['FECHA','OLA','PEDIDO','UBIC_DESPACHO','ZONA','COD_TIENDA','TIENDA','CONTENEDOR','ITEM','CASEPACK','DESCRIPCION','UNIDADES_ASIGNADAS','UNIDADES_DESPACHADAS','HORA','VOLUMEN_UNITARIO','VOLUMEN_TOTAL','PESO','ESTATUS_CONTENEDOR','USER_ID'],
+    questions: ['¿Qué despachó el operario X en la OLA Y?', '¿Cuánto pesó el despacho de la tienda Z?', '¿Qué contenedores siguen pendientes?'],
+    crosses: [['R049a','Validar fill rate a nivel detallado'], ['R049','Relacionar con productividad del picker'], ['R121','Ver qué OLAs tienen cancelaciones vs asignaciones']],
+    category: 'despacho'
+  },
+  {
+    code: 'R049a', name: 'Fill Rate General por OLA', process: 'Servicio', color: '#4fd9a0',
+    desc: 'Nivel de cumplimiento completo por OLA: desde lo pedido hasta lo enviado, con cancelaciones y pendientes.',
+    fields: ['# OLA','UNIDADES PEDIDAS','UNIDADES ASIGNADAS','NIVEL DE SERVICIO','UNIDADES DESPACHADAS','TIEMPO DESPACHO','FILL RATE DESPACHADO','UNIDADES ENVIADAS','FILL RATE ENVIADO','UNIDADES EN TRÁNSITO','UNIDADES CANCELADAS','UNIDADES CON MANIFIESTO','UNIDADES AJUSTADAS','PENDIENTE POR DESPACHAR'],
+    questions: ['¿Cuál es el fill rate de la OLA de hoy?', '¿Cuántas unidades se cancelaron?', '¿Cuánto tardó el despacho?', '¿Cuántas unidades siguen pendientes?'],
+    crosses: [['R045','Profundizar por ítem específico'], ['R121','Detallar las cancelaciones de la OLA'], ['R122','Ver qué pendientes se pueden recuperar'], ['R130','Ver el detalle de asignaciones']],
+    category: 'servicio'
+  },
+  {
+    code: 'R045', name: 'Fill Rate por Ítem', process: 'Servicio', color: '#4fd9a0',
+    desc: 'Fill rate a nivel de ítem con foto del inventario al momento del pedido y precio del producto.',
+    fields: ['FECHA','ZONA','UBICACION','ITEM','DESCRIPCIÓN','UNIDADES FOTO INV','UNIDADES_PEDIDAS','UNIDADES_ASIGNADAS','NIVEL_DE_SERVICIO','UNIDADES_DESPACHADAS','FILL_RATE_DESPACHADO','TIEMPO_DESPACHO','UNIDADES_TRÁNSITO','UNIDADES_CANCELADAS','UNIDADES_CON_MANIFIESTO','UNIDADES AJUSTADAS','PRECIO'],
+    questions: ['¿Por qué falló el fill rate del ítem X?', '¿Había inventario cuando se generó el pedido?', '¿Cuánto dinero se dejó de despachar?'],
+    crosses: [['R049a','Comparar fill rate ítem vs fill rate global OLA'], ['R031','Cruzar foto de inventario vs inventario en puesto'], ['R025','Relacionar unidades ajustadas con costos']],
+    category: 'servicio'
+  },
+  {
+    code: 'R121', name: 'Unidades Canceladas por Wave', process: 'Servicio', color: '#4fd9a0',
+    desc: 'Unidades que ya no se pueden recuperar porque fueron canceladas definitivamente.',
+    fields: ['WAVE_NBR','ITEM_ID','DESCRIPTION','UNIT_QTY','CYCLE_COUNT_STATUS'],
+    questions: ['¿Qué se canceló en la wave X?', '¿Esos ítems tenían el conteo cíclico al día?', '¿Qué ítems se cancelan con más frecuencia?'],
+    crosses: [['R122','Ver qué todavía se puede recuperar'], ['R081','Ver si hay fallas de inventario asociadas'], ['R049a','Ver cómo afectan el fill rate']],
+    category: 'servicio'
+  },
+  {
+    code: 'R122', name: 'Unidades Pendientes por OLA', process: 'Servicio', color: '#4fd9a0',
+    desc: 'Unidades que todavía no se han despachado pero aún pueden recuperarse.',
+    fields: ['OLA','ITEM','DESCRIPCION','UNIDADES','TIPO_DESPACHO'],
+    questions: ['¿Qué ítems de la OLA X están pendientes?', '¿Hay stock en puesto para resolverlos?', '¿Cuál es el tipo de despacho afectado?'],
+    crosses: [['R031','Ver si hay stock para resolver los pendientes'], ['R119','Ver si hay reposición en camino'], ['R121','Entender qué parte termina cancelándose']],
+    category: 'servicio'
+  },
+  {
+    code: 'R025', name: 'Costo de Ajustes', process: 'Calidad', color: '#f9c74f',
+    desc: 'Todos los ajustes de inventario: quién los hizo, qué tipo son y cuánto costaron.',
+    fields: ['FECHA','HORA','ID ARTÍCULO','DESCRIPCIÓN','USUARIO','CÓDIGO AJUSTE','TIPO DE AJUSTE','CANTIDAD','COSTO PROMEDIO UNITARIO (RMS)','TOTAL COSTO','CATEGORIA'],
+    questions: ['¿Cuánto dinero en ajustes se hizo hoy?', '¿Qué operario hizo más ajustes?', '¿Qué categorías tienen más ajustes?'],
+    crosses: [['R150','Ver si los ajustes vienen de conteos cíclicos'], ['R034','Relacionar con devoluciones de proveedores'], ['R033','Ver ajustes sobre ítems en almacenaje']],
+    category: 'calidad'
+  },
+  {
+    code: 'R150', name: 'Conteos Efectuados en el CENDIS', process: 'Calidad', color: '#f9c74f',
+    desc: 'Historial de todos los conteos cíclicos: qué se contó, qué diferencia había y qué ajuste se hizo.',
+    fields: ['UBICACIÓN','ZONA','ITEM','DESCRIPCIÓN','UNIDADES ORIGINALES','UNIDADES CONTADAS','UNIDADES AJUSTADAS','ESTATUS ORIGINAL','ESTATUS CONTEO','USUARIO','FECHA HORA'],
+    questions: ['¿Cuántas unidades había en sistema vs lo contado?', '¿Qué zonas tienen más discrepancias?', '¿Qué operario contó la ubicación X?'],
+    crosses: [['R025','Ver si los ajustes generaron costo'], ['R020','Cruzar cycle count status vs conteos efectuados'], ['R081','Ver si ubicaciones con doble ítem tienen discrepancias']],
+    category: 'calidad'
+  },
+  {
+    code: 'R012', name: 'Maestro de Ítems Logísticos', process: 'Maestro', color: '#a78bfa',
+    desc: 'Toda la información maestra de los ítems: dimensiones, paleta, inventario total y parámetros de reabastecimiento.',
+    fields: ['ITEM','UBICACION DESPACHO','ZONA','DESCRIPCION','CASEPACK','CAPACIDAD PUESTO','ROP','TI','HI','DC_TI','DC_HI','DIMENSIONES ITEM','DIMENSIONES BULTO','UND PUESTO DESPACHO','UNIDADES DISTRIBUIDAS','PESO ITEM','VENCE','DIAS VENCIMIENTO','UND ALMACENAJE','ID PROVEEDOR','INVENTARIO TOTAL','INVENTARIO TEMPORAL','PLAN ALMACENAJE','SOM','TIENDAS ASOCIADAS','TIPO DISTRIBUCIÓN','SOH TIENDAS','NOMBRE PROVEEDOR','UNIDAD DESPACHO','ANAQUELES Y DEFINITIVOS'],
+    questions: ['¿Cuál es la configuración de paleta del ítem X?', '¿Cuál es el inventario total de este ítem?', '¿A qué tiendas va este ítem?'],
+    crosses: [['R031','Comparar inventario en puesto vs ROP'], ['R033','Validar inventario en almacenaje'], ['R045','Enriquecer fill rate con datos maestros']],
+    category: 'maestro'
+  },
+  {
+    code: 'R124', name: 'Demanda Líneas y Unidades', process: 'Demanda', color: '#f96b6b',
+    desc: 'Cuántas unidades está pidiendo cada tienda por ítem.',
+    alert: '⚠️ ALERTA: El campo LÍNEAS tiene datos incorrectos. Usar solo el campo UNIDADES hasta nuevo aviso de María Parra.',
+    fields: ['TIENDA','ITEM','LINEAS ⚠️','UNIDADES'],
+    questions: ['¿Cuánto está pidiendo la tienda X del ítem Y? (solo UNIDADES)', '¿Qué tiendas tienen mayor demanda?'],
+    crosses: [['R120','Cruzar con disponibilidad en el almacén'], ['R049a','Comparar demanda vs fill rate por tienda']],
+    category: 'demanda'
+  },
+  {
+    code: 'R155', name: 'Detalle Distribución por Ítem y Tienda', process: 'Demanda', color: '#f96b6b',
+    desc: 'Detalle de la distribución comercial por ítem y tienda.',
+    alert: '⏳ Pendiente de configuración. Aún no tiene encabezados registrados.',
+    fields: ['Pendiente'],
+    questions: ['Ver detalle de distribución comercial por ítem y tienda'],
+    crosses: [],
+    category: 'demanda'
+  },
+  {
+    code: 'R070', name: 'Ítems +48h sin Despacho', process: 'Despacho', color: '#f96b6b',
+    desc: 'Ítems que llevan más de 48 horas en el CENDIS sin ser despachados.',
+    alert: '🚫 Este reporte NO está funcionando actualmente. Sin datos / posiblemente inactivo.',
+    fields: ['Sin datos'],
+    questions: [],
+    crosses: [],
+    category: 'despacho'
+  }
+];
+
+const QUICK_FIND = [
+  { q: '¿Qué mercancía llegó hoy?', codes: ['R117','R111','R042'] },
+  { q: '¿Dónde está un ítem en el almacén?', codes: ['R003','R033','R031','R053','R081'] },
+  { q: '¿Cómo va el avance del despacho?', codes: ['R080','R004','R049a'] },
+  { q: '¿Cuánto pickeó cada operario?', codes: ['R049'] },
+  { q: '¿Cuántas unidades se cancelaron?', codes: ['R121','R122'] },
+  { q: '¿Cuál es el fill rate?', codes: ['R049a','R045'] },
+  { q: '¿Qué ítems tienen doble ubicación?', codes: ['R081'] },
+  { q: '¿Qué contenedores no han salido?', codes: ['R013'] },
+  { q: '¿Qué puestos necesitan reposición?', codes: ['R031','R119'] },
+  { q: '¿Cuánto costaron los ajustes?', codes: ['R025'] },
+  { q: '¿Cuál es la demanda por tienda?', codes: ['R124','R120'] },
+  { q: '¿Qué tan preciso es mi inventario?', codes: ['R150'] },
+  { q: '¿Qué devolvió o faltó un proveedor?', codes: ['R034'] },
+  { q: '¿Cuál es la productividad de recepción?', codes: ['R085'] },
+  { q: '¿Hay contenedores bloqueados?', codes: ['R033'] },
+  { q: '¿Cuántas reposiciones están pendientes?', codes: ['R119','R093'] },
+];
+
+const FLOW_STEPS = [
+  { num: '1', name: 'Recepción', codes: ['ASN','R000','R042','R117','R111','R085','R034'], desc: 'El proveedor llega, se abre la cita, se recibe la mercancía y se planifica dónde guardarla.' },
+  { num: '2', name: 'Almacenaje', codes: ['R033','R053','R003','R020','R092','R081'], desc: 'La mercancía recibida se lleva a su ubicación definitiva o temporal.' },
+  { num: '3', name: 'Reposición', codes: ['R119','R093','R094','R031'], desc: 'Cuando un puesto baja del ROP, se genera tarea de reposición desde almacenaje.' },
+  { num: '4', name: 'Picking', codes: ['R049','R140','R045','R120'], desc: 'Los operarios recogen productos y los colocan en contenedores para cada tienda.' },
+  { num: '5', name: 'Despacho', codes: ['R004','R009','R013','R080','R095','R130'], desc: 'Los contenedores se organizan, cargan y preparan para salir al camión.' },
+  { num: '6', name: 'Envío', codes: ['R049a','R121','R122','R124','R155'], desc: 'El camión sale y se mide el nivel de cumplimiento hacia las tiendas.' },
+];
+
+const GLOSARIO = {
+  'Inventario': [
+    { t: 'SOH (Stock on Hand)', d: 'Las unidades que hay físicamente en tiendas en este momento.' },
+    { t: 'Inventario en Puesto', d: 'Unidades disponibles en el punto de picking, listas para ser tomadas por el operario.' },
+    { t: 'Inventario en Almacenaje', d: 'Unidades guardadas en ubicaciones de reserva, aún no en el puesto de picking.' },
+    { t: 'Inventario Total', d: 'Todo lo que hay: puesto + almacenaje + temporales.' },
+    { t: 'ROP (Reorder Point)', d: 'Punto de reorden. Cuando el inventario en puesto baja de este nivel, se debe reponer.' },
+    { t: 'SOM / Store OM', d: 'Orden mínima por tienda. Cantidad mínima que se envía a cada tienda.' },
+    { t: 'Lote', d: 'Número que identifica un grupo de productos recibidos juntos. Sirve para trazabilidad y vencimientos.' },
+    { t: 'Foto de Inventario', d: 'Captura del stock disponible en el momento exacto en que se generó el pedido.' },
+  ],
+  'Empaque y Paletización': [
+    { t: 'Case Pack / Casepack', d: 'Cantidad de unidades que vienen dentro de una caja (bulto) del proveedor.' },
+    { t: 'Bulto', d: 'Una caja o empaque del proveedor que contiene varias unidades.' },
+    { t: 'Sub-bulto', d: 'Agrupación menor dentro del bulto.' },
+    { t: 'TI', d: 'Número de bultos por capa en una paleta (hacia las tiendas).' },
+    { t: 'HI', d: 'Número de capas de una paleta (hacia las tiendas).' },
+    { t: 'DC_TI / DC_HI', d: 'TI y HI para paletas dentro del Centro de Distribución.' },
+    { t: 'Roller', d: 'Estructura rodante para transportar mercancía dentro del almacén o al camión.' },
+    { t: 'Cesta', d: 'Contenedor tipo canasta usado para agrupar mercancía de picking.' },
+  ],
+  'Ubicación': [
+    { t: 'Slot / Puesto', d: 'La posición física asignada a un ítem en la zona de picking.' },
+    { t: 'Zona', d: 'Área del almacén (ej: zona A, zona B, zona picking, zona almacenaje).' },
+    { t: 'Nivel', d: 'Altura dentro de una estantería (nivel 1 = piso, etc.).' },
+    { t: 'Ubicación Temporal', d: 'Lugar provisional donde se pone la mercancía cuando aún no tiene ubicación definitiva.' },
+    { t: 'Doble Ubicación', d: 'Cuando un mismo ítem está guardado en dos lugares — puede causar fallas de inventario.' },
+    { t: 'Plan de Almacenaje', d: 'La regla que define dónde debe ir guardado cada ítem.' },
+  ],
+  'Recepción': [
+    { t: 'ASN', d: 'Advanced Shipping Notice. Aviso que manda el proveedor antes de llegar diciendo qué va a traer.' },
+    { t: 'Cita', d: 'La franja horaria reservada para que un proveedor entregue mercancía.' },
+    { t: 'Apertura / Cierre de cita', d: 'Hora de inicio y fin de la recepción de una cita.' },
+    { t: 'Faltante', d: 'Mercancía que el proveedor debía traer pero no llegó.' },
+    { t: 'Devolución', d: 'Mercancía que se rechaza y se le devuelve al proveedor.' },
+  ],
+  'Despacho y Servicio': [
+    { t: 'OLA / Wave', d: 'Un grupo de pedidos que se procesan juntos en una misma ronda de picking y despacho.' },
+    { t: 'Línea', d: 'Una fila del pedido, que corresponde a un ítem específico.' },
+    { t: 'Fill Rate', d: 'Porcentaje de cumplimiento: qué tanto de lo pedido realmente se entregó.' },
+    { t: 'Fill Rate Despachado', d: '% de lo pedido que salió del CENDIS.' },
+    { t: 'Fill Rate Enviado', d: '% de lo pedido que efectivamente llegó a la tienda.' },
+    { t: 'Unidades Asignadas', d: 'Unidades reservadas en el sistema para un pedido, aún no pickeadas.' },
+    { t: 'Unidades Canceladas', d: 'Unidades que no se pudieron despachar y se cancelaron definitivamente.' },
+    { t: 'Unidades Pendientes', d: 'Unidades que aún no se despacharon pero todavía pueden recuperarse.' },
+    { t: 'MED / MISC', d: 'Tipos de despacho: MED = medicamentos, MISC = productos misceláneos/generales.' },
+  ],
+  'Productividad': [
+    { t: 'Cont/H', d: 'Contenedores por hora. Mide qué tan rápido trabaja un operario.' },
+    { t: 'Líneas/Hora', d: 'Cuántas líneas de picking hace un operario en una hora.' },
+    { t: 'Bulto/HH', d: 'Bultos por hora hombre. Productividad en reposición.' },
+    { t: 'Paleta/HH', d: 'Paletas por hora hombre. Productividad en reposición.' },
+    { t: 'MIN_DATE / MAX_DATE', d: 'La primera y última hora registrada de actividad de un picker en el día.' },
+    { t: 'AVG', d: 'Promedio (average). Ej: AVG_LNS = promedio de líneas por día.' },
+  ],
+  'Calidad e Inventario': [
+    { t: 'Cycle Count', d: 'Conteo cíclico. Proceso de contar físicamente el inventario para verificar que coincida con el sistema.' },
+    { t: 'Ajuste', d: 'Corrección al inventario del sistema cuando no coincide con lo físico.' },
+    { t: 'Estatus I', d: 'Contenedor disponible para uso.' },
+    { t: 'Estatus X', d: 'Contenedor bloqueado por vencimiento.' },
+    { t: 'Estatus T', d: 'Contenedor en Work in Progress (WIP) — bloqueado por problema detectado.' },
+    { t: 'WIP (Work in Progress)', d: 'Estado especial que se aplica en WMS para bloquear posiciones y contenedores con problemas.' },
+    { t: 'FEFO', d: 'First Expired First Out — los productos que vencen primero deben salir primero.' },
+  ],
+};
+
+const SCENARIOS = [
+  {
+    icon: '📦',
+    q: '¿Quiero saber si un ítem llegó hoy?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R117\')">R117</span> — busca por ítem o fecha de recepción.',
+      'Complementa con <span class="rtag" onclick="openModal(\'R042\')">R042</span> si quieres ver si todavía está en puerta.',
+      'Usa <span class="rtag" onclick="openModal(\'R111\')">R111</span> para ver el total de contenedores por orden de compra.'
+    ]
+  },
+  {
+    icon: '🔍',
+    q: '¿Quiero saber dónde está un ítem ahora mismo?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — si está en el puesto de picking.',
+      'Abre <span class="rtag" onclick="openModal(\'R033\')">R033</span> — si está en almacenaje.',
+      'Abre <span class="rtag" onclick="openModal(\'R053\')">R053</span> — si está en ubicación temporal.',
+      'Abre <span class="rtag" onclick="openModal(\'R003\')">R003</span> — para ver la ubicación exacta con cesta y contenedor.',
+      'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — si sospechas que está en dos lugares al mismo tiempo.'
+    ]
+  },
+  {
+    icon: '🚚',
+    q: '¿Quiero ver el avance del despacho?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R080\')">R080</span> — para ver el % de avance por zona en tiempo real.',
+      'Abre <span class="rtag" onclick="openModal(\'R004\')">R004</span> — para el resumen ejecutivo por OLA y tienda.',
+      'Abre <span class="rtag" onclick="openModal(\'R049a\')">R049a</span> — para el fill rate de cada OLA.'
+    ]
+  },
+  {
+    icon: '❌',
+    q: '¿Quiero saber por qué se cancelaron unidades?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R121\')">R121</span> — para ver las cancelaciones definitivas.',
+      'Abre <span class="rtag" onclick="openModal(\'R122\')">R122</span> — para ver las que todavía se pueden recuperar.',
+      'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — para verificar si hay fallas de inventario asociadas.',
+      'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — para ver si el puesto tenía stock al momento.'
+    ]
+  },
+  {
+    icon: '🔄',
+    q: '¿Qué puestos necesitan reposición urgente?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R031\')">R031</span> — filtra ítems donde inventario en puesto esté por debajo del ROP.',
+      'Cruza con <span class="rtag" onclick="openModal(\'R119\')">R119</span> para ver si ya hay una tarea generada.',
+      'Cruza con <span class="rtag" onclick="openModal(\'R033\')">R033</span> para confirmar que hay stock en almacenaje disponible.'
+    ]
+  },
+  {
+    icon: '📊',
+    q: '¿Quiero revisar el fill rate de las tiendas?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R049a\')">R049a</span> — para el fill rate por OLA (vista ejecutiva).',
+      'Abre <span class="rtag" onclick="openModal(\'R045\')">R045</span> — para profundizar por ítem específico.',
+      'Abre <span class="rtag" onclick="openModal(\'R124\')">R124</span> — para ver la demanda por tienda (⚠️ solo campo UNIDADES).'
+    ]
+  },
+  {
+    icon: '🔒',
+    q: '¿Hay un contenedor bloqueado, qué hago?',
+    steps: [
+      'Identifica el estatus en <span class="rtag" onclick="openModal(\'R033\')">R033</span>: I = disponible, X = vencido, T = WIP.',
+      'Si el estatus es X → vencimiento. Gestionar con el área correspondiente.',
+      'Si el estatus es T → WIP. Ve a la sección "Procedimiento WIP" en el menú izquierdo.',
+    ]
+  },
+  {
+    icon: '✅',
+    q: '¿Quiero verificar la precisión del inventario?',
+    steps: [
+      'Abre <span class="rtag" onclick="openModal(\'R150\')">R150</span> — para ver los conteos efectuados y sus diferencias.',
+      'Abre <span class="rtag" onclick="openModal(\'R025\')">R025</span> — para ver el costo de los ajustes realizados.',
+      'Abre <span class="rtag" onclick="openModal(\'R081\')">R081</span> — para ver si hay ítems con doble ubicación que distorsionan el inventario.'
+    ]
+  },
+];
+
+const ALERTS_DATA = [
+  { code: 'ASN', type: 'warning', msg: 'Siempre ingresar el número de cita. Sin ese dato el reporte sale en cero.' },
+  { code: 'R009', type: 'warning', msg: 'Filtrar siempre por tienda. Sin filtro los datos no son útiles.' },
+  { code: 'R070', type: 'danger', msg: 'Este reporte no está funcionando actualmente. Sin datos / posiblemente inactivo.' },
+  { code: 'R124', type: 'danger', msg: 'El campo LÍNEAS tiene datos incorrectos. Usar solo el campo UNIDADES hasta que María Parra lo certifique.' },
+  { code: 'R155', type: 'info', msg: 'Pendiente de configuración. No tiene estructura disponible aún.' },
+  { code: 'R092', type: 'info', msg: 'Solo muestra el total del equipo. No hay desglose por operario individual.' },
+];
+
+// ============ RENDER FUNCTIONS ============
+
+function getReportColor(code) {
+  const r = REPORTS.find(x => x.code === code);
+  return r ? r.color : '#4f9cf9';
+}
+
+function buildQuickTable() {
+  const tbody = document.getElementById('quickTableBody');
+  tbody.innerHTML = QUICK_FIND.map(item => `
+    <tr>
+      <td class="question-text">${item.q}</td>
+      <td><div class="report-tags">${item.codes.map(c => `<span class="rtag" onclick="openModal('${c}')">${c}</span>`).join('')}</div></td>
+    </tr>
+  `).join('');
+}
+
+function buildFlowDiagram() {
+  const container = document.getElementById('flowContainer');
+  container.innerHTML = FLOW_STEPS.map((step, i) => `
+    <div class="flow-step" id="flow-${i}" onclick="showFlowDetail(${i})">
+      <div class="flow-number">0${step.num}</div>
+      <div class="flow-name">${step.name}</div>
+      <div class="flow-reports">${step.codes.map(c => `<span class="flow-rtag">${c}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function showFlowDetail(idx) {
+  document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active-flow'));
+  document.getElementById('flow-' + idx).classList.add('active-flow');
+  const step = FLOW_STEPS[idx];
+  const detail = document.getElementById('flowDetail');
+  detail.style.display = 'block';
+  detail.innerHTML = `
+    <div class="card-title">Etapa ${step.num}: ${step.name}</div>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:16px;">${step.desc}</p>
+    <div class="report-tags">${step.codes.map(c => `<span class="rtag" onclick="openModal('${c}')">${c} — ${REPORTS.find(r=>r.code===c)?.name||''}</span>`).join('')}</div>
+  `;
+}
+
+function buildGlosario() {
+  const container = document.getElementById('glosarioContainer');
+  container.innerHTML = Object.entries(GLOSARIO).map(([cat, items]) => `
+    <div class="glossary-category">
+      <div class="glossary-category-title">${cat}</div>
+      ${items.map(item => `
+        <div class="glossary-item">
+          <div class="glossary-term">${item.t}</div>
+          <div class="glossary-def">${item.d}</div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function filterGlosario(val) {
+  const v = val.toLowerCase();
+  document.querySelectorAll('.glossary-item').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.classList.toggle('hidden', v.length > 0 && !text.includes(v));
+  });
+}
+
+function buildReportCard(r) {
+  return `
+    <div class="report-card" style="--card-accent:${r.color}" onclick="openModal('${r.code}')">
+      <div class="report-card-code">${r.code}</div>
+      <div class="report-card-name">${r.name}</div>
+      <div class="report-card-desc">${r.desc}</div>
+      <span class="report-card-tag">${r.process}</span>
+      ${r.alert ? `<span class="report-card-tag" style="color:var(--warning);background:rgba(249,199,79,0.08);">⚠️ Ver nota</span>` : ''}
+    </div>
+  `;
+}
+
+function buildGridForCategory(gridId, category) {
+  const container = document.getElementById(gridId);
+  if (!container) return;
+  const filtered = category === 'all' ? REPORTS : REPORTS.filter(r => r.category === category);
+  container.innerHTML = filtered.map(buildReportCard).join('');
+}
+
+function buildScenarios() {
+  const container = document.getElementById('scenarioList');
+  container.innerHTML = SCENARIOS.map((s, i) => `
+    <div class="scenario" id="scenario-${i}">
+      <div class="scenario-header" onclick="toggleScenario(${i})">
+        <span class="scenario-icon">${s.icon}</span>
+        <span class="scenario-q">${s.q}</span>
+        <span class="scenario-chevron">▶</span>
+      </div>
+      <div class="scenario-body">
+        <ol class="step-list">
+          ${s.steps.map(step => `<li>${step}</li>`).join('')}
+        </ol>
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleScenario(i) {
+  const el = document.getElementById('scenario-' + i);
+  el.classList.toggle('open');
+}
+
+function buildAlerts() {
+  const container = document.getElementById('alertsGrid');
+  container.innerHTML = ALERTS_DATA.map(a => `
+    <div class="alert-card ${a.type}">
+      <div class="alert-card-code">${a.code}</div>
+      <div class="alert-card-msg">${a.msg}</div>
+    </div>
+  `).join('');
+}
+
+// ============ MODAL ============
+
+function openModal(code) {
+  const r = REPORTS.find(x => x.code === code);
+  if (!r) return;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <div class="modal-code">${r.code}</div>
+    <div class="modal-title">${r.name}</div>
+    <div class="modal-process">Proceso: ${r.process}</div>
+    ${r.alert ? `<div class="alert-box">⚠️ <span>${r.alert}</span></div>` : ''}
+    <div class="modal-section">
+      <div class="modal-section-title">¿Para qué sirve?</div>
+      <p class="modal-desc">${r.desc}</p>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">Campos disponibles</div>
+      <div class="fields-list">${r.fields.map(f => `<span class="field-tag">${f}</span>`).join('')}</div>
+    </div>
+    ${r.questions.length ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Preguntas que responde</div>
+      <ul class="questions-list">${r.questions.map(q => `<li>${q}</li>`).join('')}</ul>
+    </div>` : ''}
+    ${r.crosses.length ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Combínalo con</div>
+      <ul class="crosses-list">${r.crosses.map(([code, desc]) => `
+        <li>
+          <span class="cross-code" onclick="switchModal('${code}')">${code}</span>
+          <span>${desc}</span>
+        </li>
+      `).join('')}</ul>
+    </div>` : ''}
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function switchModal(code) {
+  openModal(code);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// ============ NAVIGATION ============
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+function globalSearchFn(val) {
+  if (val.length < 2) return;
+  // Find matching reports
+  const v = val.toLowerCase();
+  const matches = REPORTS.filter(r =>
+    r.code.toLowerCase().includes(v) ||
+    r.name.toLowerCase().includes(v) ||
+    r.desc.toLowerCase().includes(v) ||
+    r.process.toLowerCase().includes(v)
+  );
+  if (matches.length === 1) {
+    openModal(matches[0].code);
+  }
+}
+
+// ============ INIT ============
+document.addEventListener('DOMContentLoaded', () => {
+  buildQuickTable();
+  buildFlowDiagram();
+  buildGlosario();
+  buildGridForCategory('allReportsGrid', 'all');
+  buildGridForCategory('recepcionGrid', 'recepcion');
+  buildGridForCategory('almacenajeGrid', 'almacenaje');
+  buildGridForCategory('reposicionGrid', 'reposicion');
+  buildGridForCategory('pickingGrid', 'picking');
+  buildGridForCategory('despachoGrid', 'despacho');
+  buildGridForCategory('servicioGrid', 'servicio');
+  buildGridForCategory('calidadGrid', 'calidad');
+  buildScenarios();
+  buildAlerts();
+});
+</script>
+</body>
+</html>
