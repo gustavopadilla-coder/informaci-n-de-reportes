@@ -929,9 +929,9 @@
       <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
       <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">7</span></div>
       <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">4</span></div>
-      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">4</span></div>
-      <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">3</span></div>
-      <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">9</span></div>
+      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">5</span></div>
+      <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">4</span></div>
+      <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">10</span></div>
 
       <div class="nav-section"><span class="nav-section-label">Guías</span></div>
       <div class="nav-item" onclick="showSection('busquedas')">🔍 Búsquedas Clave</div>
@@ -1199,9 +1199,9 @@ const REPORTS = [
   },
   {
     code: 'R000', name: 'Recepción y Plan de Almacenaje', process: 'Recepción', color: '#4f9cf9',
-    desc: 'Registro detallado de ítems recibidos con dimensiones, configuración de paleta y plan de almacenaje.',
+    desc: 'Registro detallado de ítems recibidos con dimensiones, configuración de paleta y plan de almacenaje. También permite detectar ítems sin puesto de despacho o sin ubicación asignada.',
     fields: ['ITEM','DESCRIPCIÓN','UNIDADES RECIBIDAS','SUB_BULTO','CASE PACK','ULTIMO SLOT','ULTIMA ZONA','PLAN DE ALMACENAJE','ALTO COSTO','ULTIMA FECHA RECEPCIÓN','FECHA CITA','SOH TIENDAS','STORE OM','TI','HI','VENDEDOR','TIPO DISTRIBUCIÓN','TIENDAS ASOCIADAS','ITEM BULK PICK','UND/PALETA','BULTOS/PALETA','DIMENSIONES ITEM','DIMENSIONES CASE','PESO CASE','PESO UNIDAD','UNIDADES','ORDER NUMBER','UBICACION ITEM'],
-    questions: ['¿Qué se recibió en una cita?', '¿Cuál es el plan de almacenaje del ítem?', '¿Cuántas unidades caben en una paleta?', '¿El ítem es de alto costo o bulk pick?'],
+    questions: ['¿Qué se recibió en una cita?', '¿Cuál es el plan de almacenaje del ítem?', '¿Qué ítems están sin puesto de despacho o sin ubicación asignada?', '¿El ítem es de alto costo o bulk pick?'],
     crosses: [['ASN','Validar acuse de recibo vs lo planificado'], ['R042','Seguimiento desde puerta de recepción'], ['R033','Confirmar que lo recibido pasó a almacenaje'], ['R012','Comparar con maestro de ítems'], ['R117','Contrastar plan vs detalle real recibido']],
     category: 'recepcion'
   },
@@ -1369,12 +1369,21 @@ const REPORTS = [
     category: 'despacho'
   },
   {
-    code: 'R013', name: 'Contenedores Sin Enviar', process: 'Despacho', color: '#f97b4f',
+    code: 'R013-L', name: 'Contenedores Sin Enviar', process: 'Despacho', color: '#f97b4f',
     desc: 'Contenedores listos dentro del CENDIS que aún no han salido en camión hacia la tienda.',
     fields: ['CONTENEDOR','TIENDA','CESTA','UNIDADES','ESTATUS','UBICACION','ZONA','OLA','FECHA CREACION'],
     questions: ['¿Qué contenedores están listos pero no han salido?', '¿Hace cuánto se crearon esos contenedores?', '¿Para qué tienda son?'],
     crosses: [['R049a','Ver si afecta el fill rate enviado'], ['R004','Cruzar con resumen general de carga'], ['R130','Cruzar detalle de asignaciones vs los que no salieron']],
     category: 'despacho'
+  },
+  {
+    code: 'R013-C', name: 'Investigador de Ítems (Operaciones)', process: 'Demanda', color: '#f96b6b',
+    desc: 'Reporte comercial de análisis profundo de un ítem en una tienda específica: cálculo de máximos, proyección de ventas, niveles de servicio e inventario en todos los niveles (tienda, tránsito, on order, CENDIS).',
+    alert: 'Se genera POR TIENDA (obligatorio). Actualmente la mayoría de secciones devuelven "Error al recuperar el xml de datos" — reporte con fallas de carga.',
+    fields: ['Máximo Definitivo','Punto de reorden','Proyección de Ventas','Desviación Estándar','Nivel de Servicio (%)','Ciclo de Pedido (días)','Tiempo de Entrega (días)','Máximo Básico','Presentación por Cara','Caras Totales','Capacidad Total','Factor Básico','Factor Semanal','Factor de Temporada (%)','Máximo Adicional','Máximo Fijo','Engorde Máximo (%)','Exhibiciones Adicionales','Inventario en Tienda','Inventario In Transit','Inventario On Order','Inventario en Cendis al Cierre','Ventas semanales (P/R)','Dimensiones','Planogramas','Calendario de Pedidos','Histórico de Máximos','Atributos UDA'],
+    questions: ['¿Cómo se calcula el máximo de un ítem en una tienda?', '¿Cuál es la proyección de ventas vs inventario disponible?', '¿Qué nivel de servicio está configurado para el ítem?', '¿Cuánto inventario hay en tienda, tránsito, on order y CENDIS?'],
+    crosses: [['R155','Validar máximo definitivo y ROP por ítem/tienda'], ['R012','Comparar parámetros maestros vs los del investigador'], ['R076','Contrastar transferencias históricas vs proyección de ventas'], ['R045','Relacionar nivel de servicio configurado vs fill rate real']],
+    category: 'demanda'
   },
   {
     code: 'R080', name: 'Contenedores Generados por Zona', process: 'Despacho', color: '#f97b4f',
@@ -1441,19 +1450,19 @@ const REPORTS = [
     category: 'calidad'
   },
   {
+    code: 'R174', name: 'Detalle de Inventario Total CENDIS', process: 'Calidad', color: '#f9c74f',
+    desc: 'Vista consolidada y valorizada del inventario total del CENDIS: unidades, costo unitario y costo total por ubicación, contenedor y estado. Es la foto financiera completa del almacén.',
+    fields: ['UBICACION','ITEM','DESCRIPCION','TIPO_UBICACION','CONTENEDOR','USUARIO','ESTADO_CONTENEDOR','UNIDADES','COSTO_PROMEDIO_UNITARIO','COSTO_PROMEDIO_TOTAL'],
+    questions: ['¿Cuánto dinero hay en inventario en el CENDIS?', '¿Cuál es el valor inmovilizado en contenedores bloqueados?', '¿Cómo se distribuye el inventario por tipo de ubicación?', '¿Cuál es el costo total por ítem en almacén?'],
+    crosses: [['R033','Complementar la valorización con lote y fechas de vencimiento'], ['R025','Relacionar el costo del inventario con los ajustes realizados'], ['R081','Calcular el valor inmovilizado en ítems con doble ubicación'], ['R012','Comparar inventario total valorizado vs inventario por ítem del maestro'], ['R053','Ver el valor del inventario atascado en ubicaciones temporales']],
+    category: 'calidad'
+  },
+  {
     code: 'R150', name: 'Conteos Efectuados en el CENDIS', process: 'Calidad', color: '#f9c74f',
     desc: 'Historial de todos los conteos cíclicos: qué se contó, qué diferencia había y qué ajuste se hizo.',
     fields: ['UBICACIÓN','ZONA','ITEM','DESCRIPCIÓN','UNIDADES ORIGINALES','UNIDADES CONTADAS','UNIDADES AJUSTADAS','ESTATUS ORIGINAL','ESTATUS CONTEO','USUARIO','FECHA HORA'],
     questions: ['¿Cuántas unidades había en sistema vs lo contado?', '¿Qué zonas tienen más discrepancias?', '¿Qué operario contó la ubicación X?'],
     crosses: [['R025','Ver si los ajustes generaron costo'], ['R020','Cruzar cycle count status vs conteos efectuados'], ['R081','Ver si ubicaciones con doble ítem tienen discrepancias']],
-    category: 'calidad'
-  },
-  {
-    code: 'R028', name: 'Ubicaciones Para Conteo Diario', process: 'Calidad', color: '#f9c74f',
-    desc: 'Lista las ubicaciones programadas para conteo cíclico del día, con su tipo, zona e ítem asignado.',
-    fields: ['TIPO UBICACION','UBICACIÓN','ZONA','ID ARTICULO','DESCRIPCIÓN','TIPO CONTEO'],
-    questions: ['¿Qué ubicaciones debo contar hoy?', '¿Cuántos conteos hay programados por zona?', '¿Qué tipo de conteo corresponde a cada ubicación?'],
-    crosses: [['R150','Comparar ubicaciones programadas vs conteos realmente efectuados'], ['R020','Cruzar con el estatus actual de las ubicaciones a contar'], ['R025','Ver si las ubicaciones contadas generaron ajustes'], ['R081','Priorizar conteos en ubicaciones con doble ítem detectado']],
     category: 'calidad'
   },
   {
@@ -1526,7 +1535,7 @@ const REPORTS = [
 ];
 
 // Reportes que también aplican a la categoría SLOT (referencias cruzadas, no duplican ficha)
-const SLOT_RELATED = ['R012','R003','R020','R031','R033','R053','R081','R000','R120'];
+const SLOT_RELATED = ['R012','R003','R020','R031','R033','R053','R081','R000','R120','R174'];
 
 const QUICK_FIND = [
   { q: '¿Qué mercancía llegó hoy?', codes: ['R117','R111','R042'] },
@@ -1537,12 +1546,14 @@ const QUICK_FIND = [
   { q: '¿Cuántas unidades se cancelaron?', codes: ['R121','R122'] },
   { q: '¿Cuál es el fill rate?', codes: ['R049a','R045'] },
   { q: '¿Qué ítems tienen doble ubicación?', codes: ['R081'] },
-  { q: '¿Qué contenedores no han salido?', codes: ['R013'] },
+  { q: '¿Qué contenedores no han salido?', codes: ['R013-L'] },
   { q: '¿Qué puestos necesitan reposición?', codes: ['R031','R119'] },
   { q: '¿Cuánto costaron los ajustes?', codes: ['R025'] },
   { q: '¿Cuál es la demanda por tienda?', codes: ['R155','R124','R120'] },
   { q: '¿Qué tan preciso es mi inventario?', codes: ['R150','R027','R028'] },
   { q: '¿Qué se transfirió este mes?', codes: ['R076'] },
+  { q: '¿Cuánto vale el inventario del CENDIS?', codes: ['R174'] },
+  { q: '¿Qué ítems están sin puesto o sin ubicación?', codes: ['R000','R012'] },
   { q: '¿Qué devolvió o faltó un proveedor?', codes: ['R034'] },
   { q: '¿Hay contenedores bloqueados?', codes: ['R033'] },
   { q: '¿Qué conteos cíclicos se hicieron?', codes: ['R027','R028','R150'] },
@@ -1553,7 +1564,7 @@ const FLOW_STEPS = [
   { num: '2', name: 'Almacenaje', codes: ['R033','R053','R003','R020','R092','R081'], desc: 'La mercancía recibida se lleva a su ubicación definitiva o temporal.' },
   { num: '3', name: 'Reposición', codes: ['R119','R093','R094','R031'], desc: 'Cuando un puesto baja del ROP, se genera tarea de reposición desde almacenaje.' },
   { num: '4', name: 'Picking', codes: ['R049','R140','R045','R120'], desc: 'Los operarios recogen productos y los colocan en contenedores para cada tienda.' },
-  { num: '5', name: 'Despacho', codes: ['R004','R009','R013','R080','R095','R130'], desc: 'Los contenedores se organizan, cargan y preparan para salir al camión.' },
+  { num: '5', name: 'Despacho', codes: ['R004','R009','R013-L','R080','R095','R130'], desc: 'Los contenedores se organizan, cargan y preparan para salir al camión.' },
   { num: '6', name: 'Envío', codes: ['R049a','R121','R122','R124','R155','R076'], desc: 'El camión sale y se mide el nivel de cumplimiento hacia las tiendas.' },
 ];
 
