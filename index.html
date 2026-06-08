@@ -1346,11 +1346,11 @@ const REPORTS = [
     category: 'picking'
   },
   {
-    code: 'R049', name: 'Productividad Pickers', process: 'Picking', color: '#4f9cf9',
-    desc: 'Cuántas líneas pickea cada operario por hora. Tiene vista de equipo e individual.',
-    fields: ['LÍNEAS (equipo)','HORAS (equipo)','PRODUCTIVIDAD (equipo)','FECHA','ID USUARIO','LINEAS','MIN_DATE','MAX_DATE','HORAS','PRODUCTIVIDAD/HORA'],
-    questions: ['¿Quién es el picker más productivo?', '¿Cuántas horas trabajó el equipo hoy?', '¿Cómo va la productividad vs días anteriores?'],
-    crosses: [['R130','Ver qué pickeó cada operario en detalle'], ['R049a','Relacionar productividad con fill rate'], ['R140','Ver volumen de líneas por ítem']],
+    code: 'R049', name: 'Informe Productividad Pickers', process: 'Picking', color: '#4f9cf9',
+    desc: 'Informe completo de productividad de picking con 3 pestañas: (1) Productividad general equipo e individual, (2) Detalle por pasillo con tareas y horas, (3) Inactividad de pickers (almuerzo, descanso, tiempo muerto e interrupciones).',
+    fields: ['— Pestaña 1 (Pickers): LÍNEAS, HORAS, PRODUCTIVIDAD (equipo); FECHA, ID USUARIO, LINEAS, MIN_DATE, MAX_DATE, HORAS, PRODUCTIVIDAD/HORA (individual)','— Pestaña 2 (Detalle): LINEAS TRABAJADAS, UNIDADES TRABAJADAS, TOTAL TAREAS, HORAS TRABAJADAS PASILLO, PROD LIN x HORA, PROD UNID x HORA + datos base por FECHA, USER_ID, PASILLO, MIN_DATE, MAX_DATE','— Pestaña 3 (Inactividad): TIEMPO_ALMUERZO_MIN, TIEMPO_DESCANSO_MIN, TIEMPO_MUERTO_MIN, TIEMPO_INACTIVO_TOTAL_MIN, CANTIDAD_INTERRUPCIONES, PROMEDIO_DURACION_GAP'],
+    questions: ['¿Quién es el picker más productivo?', '¿Cuál es la productividad por pasillo?', '¿Cuánto tiempo de inactividad tiene cada picker?', '¿Cuántas interrupciones y de qué duración promedio?'],
+    crosses: [['R130','Ver qué pickeó cada operario en detalle'], ['R049a','Relacionar productividad con fill rate'], ['R140','Ver volumen de líneas por ítem'], ['R030','Relacionar velocidad de picking con errores de despacho']],
     category: 'picking'
   },
   {
@@ -1569,6 +1569,8 @@ const QUICK_FIND = [
   { q: '¿Qué slot tiene asignado un ítem?', codes: ['R012','R003','R020'] },
   { q: '¿Cómo va el avance del despacho?', codes: ['R080','R004','R049a'] },
   { q: '¿Cuánto pickeó cada operario?', codes: ['R049'] },
+  { q: '¿Cuánta inactividad o tiempo muerto tienen los pickers?', codes: ['R049'] },
+  { q: '¿Cuál es la productividad por pasillo?', codes: ['R049'] },
   { q: '¿Cuántas unidades se cancelaron?', codes: ['R121','R122'] },
   { q: '¿Cuál es el fill rate?', codes: ['R049a','R045'] },
   { q: '¿Qué ítems tienen doble ubicación?', codes: ['R081'] },
