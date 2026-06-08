@@ -929,9 +929,10 @@
       <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
       <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">7</span></div>
       <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">4</span></div>
-      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">5</span></div>
+      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">6</span></div>
       <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">4</span></div>
       <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">10</span></div>
+      <div class="nav-item" onclick="showSection('monitoreo')">🖥️ Monitoreo & Control <span class="badge badge-green">1</span></div>
 
       <div class="nav-section"><span class="nav-section-label">Guías</span></div>
       <div class="nav-item" onclick="showSection('busquedas')">🔍 Búsquedas Clave</div>
@@ -1066,6 +1067,15 @@
         <div class="section-subtitle">Todos los reportes que sirven para gestionar slots, posiciones, plan de almacenaje y ubicación física de los ítems.</div>
       </div>
       <div class="reports-grid" id="slotGrid"></div>
+    </div>
+
+    <!-- MONITOREO -->
+    <div id="sec-monitoreo" class="section">
+      <div class="section-header">
+        <div class="section-title">🖥️ Monitoreo & Control</div>
+        <div class="section-subtitle">Reportes de control operativo para detectar problemas (pedidos sin ruta, tiendas sin pedido, errores de integración) antes de que afecten el despacho.</div>
+      </div>
+      <div class="reports-grid" id="monitoreoGrid"></div>
     </div>
 
     <!-- BUSQUEDAS CLAVE -->
@@ -1458,6 +1468,14 @@ const REPORTS = [
     category: 'calidad'
   },
   {
+    code: 'R030', name: 'FTD Outbound Audit (Auditoría de Despacho)', process: 'Calidad', color: '#f9c74f',
+    desc: 'Auditoría de calidad del despacho: verifica que las unidades despachadas físicamente coincidan con lo que el sistema esperaba, antes de que el contenedor salga a la tienda. Se filtra por rango de fecha y por número de contenedor.',
+    fields: ['ZONA','TIENDA','CONTENEDOR','FECHA/HORA','USUARIO CONTROL DE CALIDAD','USUARIO DESPACHO','ARTÍCULO','DESCRIPCIÓN','CANTIDAD ESPERADA','CANTIDAD CONTADA','DIFERENCIA','INNER','CASEPACK'],
+    questions: ['¿Las unidades despachadas coinciden con lo esperado?', '¿Qué contenedores tienen diferencias antes de salir?', '¿Qué zonas o tiendas tienen más errores de despacho?', '¿Cuántas unidades se auditaron en el contenedor X?'],
+    crosses: [['R130','Comparar lo despachado vs lo auditado por contenedor'], ['R049','Relacionar errores de despacho con productividad del picker'], ['R121','Ver si las diferencias terminan en cancelaciones'], ['R025','Validar si las diferencias generan ajustes de inventario'], ['R081','Correlacionar errores de despacho con fallas de ubicación']],
+    category: 'calidad'
+  },
+  {
     code: 'R150', name: 'Conteos Efectuados en el CENDIS', process: 'Calidad', color: '#f9c74f',
     desc: 'Historial de todos los conteos cíclicos: qué se contó, qué diferencia había y qué ajuste se hizo.',
     fields: ['UBICACIÓN','ZONA','ITEM','DESCRIPCIÓN','UNIDADES ORIGINALES','UNIDADES CONTADAS','UNIDADES AJUSTADAS','ESTATUS ORIGINAL','ESTATUS CONTEO','USUARIO','FECHA HORA'],
@@ -1523,6 +1541,14 @@ const REPORTS = [
     crosses: [],
     category: 'despacho'
   },
+  {
+    code: 'R014', name: 'Monitoreo', process: 'Monitoreo', color: '#2dd4bf',
+    desc: 'Reporte de control operativo con 4 vistas: pedidos sin ruta, tiendas sin pedido, tiendas con pedido y errores de integración del RIB. Sirve para detectar problemas antes de que afecten el despacho.',
+    fields: ['— Pedidos sin rutas: Tienda, Nombre, Código del Pedido','— Tiendas sin pedidos: Código, Nombre','— Tiendas con pedidos: Código, Nombre, Código del Pedido, Cantidad de Productos, OLA','— Hospital del RIB: Familia, Tipo, N° Mensaje'],
+    questions: ['¿Qué pedidos no tienen ruta asignada?', '¿Qué tiendas quedaron sin pedido?', '¿Qué tiendas tienen pedido y en qué OLA?', '¿Hay errores de integración entre sistemas (RIB)?'],
+    crosses: [['R049a','Ver si las tiendas con pedido cumplen su fill rate'], ['R009','Validar que los pedidos sin ruta no queden sin cargar'], ['R155','Contrastar tiendas sin pedido vs demanda esperada'], ['R130','Confirmar que las tiendas con pedido tienen asignaciones reales'], ['R122','Relacionar pedidos sin ruta con unidades pendientes']],
+    category: 'monitoreo'
+  },
   // ─── SLOT: reportes relacionados con ubicaciones, slotting y posiciones ───
   {
     code: 'R012s', name: 'Maestro de Ítems — Vista Slot', process: 'Slot', color: '#22d3ee',
@@ -1551,8 +1577,11 @@ const QUICK_FIND = [
   { q: '¿Cuánto costaron los ajustes?', codes: ['R025'] },
   { q: '¿Cuál es la demanda por tienda?', codes: ['R155','R124','R120'] },
   { q: '¿Qué tan preciso es mi inventario?', codes: ['R150','R027','R028'] },
+  { q: '¿Las unidades despachadas coinciden con lo esperado?', codes: ['R030'] },
   { q: '¿Qué se transfirió este mes?', codes: ['R076'] },
   { q: '¿Cuánto vale el inventario del CENDIS?', codes: ['R174'] },
+  { q: '¿Qué pedidos no tienen ruta asignada?', codes: ['R014'] },
+  { q: '¿Qué tiendas quedaron sin pedido?', codes: ['R014'] },
   { q: '¿Qué ítems están sin puesto o sin ubicación?', codes: ['R000','R012'] },
   { q: '¿Qué devolvió o faltó un proveedor?', codes: ['R034'] },
   { q: '¿Hay contenedores bloqueados?', codes: ['R033'] },
@@ -1902,6 +1931,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   buildGridForCategory('calidadGrid','calidad');
   buildGridForCategory('demandaGrid','demanda');
   buildGridForCategory('slotGrid','slot');
+  buildGridForCategory('monitoreoGrid','monitoreo');
   buildScenarios();
   buildAlerts();
 });
