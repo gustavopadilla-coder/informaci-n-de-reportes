@@ -929,7 +929,7 @@
       <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
       <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">7</span></div>
       <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">4</span></div>
-      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">6</span></div>
+      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">7</span></div>
       <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">4</span></div>
       <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">10</span></div>
       <div class="nav-item" onclick="showSection('monitoreo')">🖥️ Monitoreo & Control <span class="badge badge-green">1</span></div>
@@ -1481,6 +1481,14 @@ const REPORTS = [
     fields: ['UBICACIÓN','ZONA','ITEM','DESCRIPCIÓN','UNIDADES ORIGINALES','UNIDADES CONTADAS','UNIDADES AJUSTADAS','ESTATUS ORIGINAL','ESTATUS CONTEO','USUARIO','FECHA HORA'],
     questions: ['¿Cuántas unidades había en sistema vs lo contado?', '¿Qué zonas tienen más discrepancias?', '¿Qué operario contó la ubicación X?'],
     crosses: [['R025','Ver si los ajustes generaron costo'], ['R020','Cruzar cycle count status vs conteos efectuados'], ['R081','Ver si ubicaciones con doble ítem tienen discrepancias']],
+    category: 'calidad'
+  },
+  {
+    code: 'R150a', name: 'Conteos Efectuados en el CENDIS (con Observaciones)', process: 'Calidad', color: '#f9c74f',
+    desc: 'Variante ampliada de R150: mismos campos de conteo cíclico más un campo de OBSERVACIONES donde el contador justifica o explica las discrepancias. Convive con R150.',
+    fields: ['UBICACIÓN','ZONA','ITEM','DESCRIPCIÓN','UNIDADES ORIGINALES','UNIDADES CONTADAS','UNIDADES AJUSTADAS','ESTATUS ORIGINAL','ESTATUS CONTEO','USUARIO','FECHA HORA','OBSERVACIONES'],
+    questions: ['¿Por qué hubo discrepancia en una ubicación? (vía observaciones)', '¿Qué causas recurrentes documentan los contadores?', '¿Qué operario justificó el ajuste de la ubicación X?'],
+    crosses: [['R150','Es la versión sin observaciones (ambos conviven)'], ['R025','Justificar ajustes con las observaciones del conteo'], ['R027','Completar la cadena de conteo cíclico'], ['R028','Comparar con ubicaciones programadas']],
     category: 'calidad'
   },
   {
