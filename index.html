@@ -637,6 +637,7 @@
   }
   .wip-box.block .wip-steps li::before { background: rgba(249,107,107,0.15); color: var(--danger); }
   .wip-box.unblock .wip-steps li::before { background: rgba(79,217,160,0.15); color: var(--accent3); }
+  .wip-box:not(.block):not(.unblock) .wip-steps li::before { background: rgba(56,189,248,0.15); color: var(--accent); }
   .wip-steps li strong { color: var(--text); }
 
   /* STATUS BADGES */
@@ -1144,6 +1145,21 @@
             <li><strong>Suprimir registro</strong> ← esto desbloquea</li>
           </ol>
         </div>
+      </div>
+
+      <div class="wip-box" style="margin-top:16px; border-color: rgba(56,189,248,0.3);">
+        <div class="wip-box-title" style="color: var(--accent);">📲 Producto con WIP por primera vez (desde el HH)</div>
+        <p style="font-size:13px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+          Cuando un producto tiene código WIP porque es la <strong>primera vez que entra</strong>, se resuelve directamente desde la pistola (HH) con este procedimiento:
+        </p>
+        <ol class="wip-steps">
+          <li>En la pantalla principal del HH, seleccionar la opción <strong>4 — Procesamientos/Otros</strong></li>
+          <li>Seleccionar la opción <strong>3 — Procesar WIP</strong></li>
+          <li>Colocar el <strong>ID del contenedor</strong></li>
+          <li>Pararse en <strong>Iniciar</strong> (debe autocompletarse con la fecha)</li>
+          <li>Presionar <strong>Ctrl 1</strong> para iniciar</li>
+          <li>Presionar <strong>Ctrl 4</strong> para terminar ← esto lo soluciona</li>
+        </ol>
       </div>
     </div>
 
