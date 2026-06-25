@@ -925,13 +925,13 @@
 
       <div class="nav-section"><span class="nav-section-label">Por Proceso</span></div>
       <div class="nav-item" onclick="showSection('recepcion')">📥 Recepción <span class="badge badge-blue">7</span></div>
-      <div class="nav-item" onclick="showSection('almacenaje')">🏗️ Almacenaje <span class="badge badge-green">6</span></div>
+      <div class="nav-item" onclick="showSection('almacenaje')">🏗️ Almacenaje <span class="badge badge-green">7</span></div>
       <div class="nav-item" onclick="showSection('reposicion')">🔄 Reposición <span class="badge badge-orange">3</span></div>
       <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
-      <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">7</span></div>
-      <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">4</span></div>
-      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">7</span></div>
-      <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">4</span></div>
+      <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">12</span></div>
+      <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">6</span></div>
+      <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">11</span></div>
+      <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">10</span></div>
       <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">10</span></div>
       <div class="nav-item" onclick="showSection('monitoreo')">🖥️ Monitoreo & Control <span class="badge badge-green">1</span></div>
 
@@ -1229,7 +1229,7 @@ const REPORTS = [
     fields: ['ITEM','DESCRIPCIÓN','UNIDADES RECIBIDAS','SUB_BULTO','CASE PACK','ULTIMO SLOT','ULTIMA ZONA','PLAN DE ALMACENAJE','ALTO COSTO','ULTIMA FECHA RECEPCIÓN','FECHA CITA','SOH TIENDAS','STORE OM','TI','HI','VENDEDOR','TIPO DISTRIBUCIÓN','TIENDAS ASOCIADAS','ITEM BULK PICK','UND/PALETA','BULTOS/PALETA','DIMENSIONES ITEM','DIMENSIONES CASE','PESO CASE','PESO UNIDAD','UNIDADES','ORDER NUMBER','UBICACION ITEM'],
     questions: ['¿Qué se recibió en una cita?', '¿Cuál es el plan de almacenaje del ítem?', '¿Qué ítems están sin puesto de despacho o sin ubicación asignada?', '¿El ítem es de alto costo o bulk pick?'],
     crosses: [['ASN','Validar acuse de recibo vs lo planificado'], ['R042','Seguimiento desde puerta de recepción'], ['R033','Confirmar que lo recibido pasó a almacenaje'], ['R012','Comparar con maestro de ítems'], ['R117','Contrastar plan vs detalle real recibido']],
-    category: 'recepcion'
+    category: 'recepcion', also: ['slot']
   },
   {
     code: 'R042', name: 'Contenedores en Puerta Recepción', process: 'Recepción', color: '#4f9cf9',
@@ -1270,7 +1270,7 @@ const REPORTS = [
     fields: ['PROVEEDOR','DEVOLUCIONES','FALTANTES'],
     questions: ['¿Qué proveedor tiene más problemas de entrega?', '¿Cuánto nos faltó de cada proveedor?'],
     crosses: [['R117','Ver detalle de ítems afectados'], ['R012','Ver qué categorías afecta por proveedor'], ['R025','Ver si generó ajustes de costo']],
-    category: 'recepcion'
+    category: 'recepcion', also: ['calidad']
   },
   {
     code: 'R033', name: 'Inventario de Almacenaje', process: 'Almacenaje', color: '#4fd9a0',
@@ -1278,7 +1278,7 @@ const REPORTS = [
     fields: ['UBICACIÓN','ID ARTÍCULO','DESCRIPCIÓN','ID CONTENEDOR','ESTADO','UNIDADES','BULTOS','LOTE','USUARIO ALMACENAJE','FECHA RECIBIDO','FECHA ALMACENADO','FECHA VENCIMIENTO','ZONA'],
     questions: ['¿Dónde está guardado el ítem X?', '¿Qué productos están por vencer?', '¿Qué contenedores están bloqueados?', '¿Quién guardó este contenedor y cuándo?'],
     crosses: [['R031','Ver si hace falta reponer al puesto'], ['R053','Ver qué sigue en temporales'], ['R020','Cruzar con estatus de la ubicación'], ['R150','Validar con conteos cíclicos']],
-    category: 'almacenaje'
+    category: 'almacenaje', also: ['slot','calidad']
   },
   {
     code: 'R053', name: 'Ubicaciones Temporales', process: 'Almacenaje', color: '#4fd9a0',
@@ -1286,7 +1286,7 @@ const REPORTS = [
     fields: ['ITEM','DESCRIPCIÓN','UBICACIÓN','CLASE','CANTIDAD','CONTENEDOR','FECHA'],
     questions: ['¿Cuánto tiempo lleva este ítem en temporal?', '¿Qué mercancía sigue sin ubicar?'],
     crosses: [['R012','Ver si tiene plan de almacenaje definido'], ['R033','Cruzar con inventario total'], ['R020','Validar estatus de ubicaciones temporales'], ['R042','Trazar flujo puerta → temporal → almacenaje']],
-    category: 'almacenaje'
+    category: 'almacenaje', also: ['slot']
   },
   {
     code: 'R003', name: 'Detalle de Ubicaciones Logísticas', process: 'Almacenaje', color: '#4fd9a0',
@@ -1294,7 +1294,7 @@ const REPORTS = [
     fields: ['UBICACIÓN','CONTENEDOR','CESTA','ESTATUS','DESTINO','ID USUARIO','ITEM','DESCRIPCIÓN','UNIDADES','BULTOS','ULTIMA MODIFICACIÓN','FECHA CREACIÓN','SUPPLIER','COSTO UNITARIO','COSTO TOTAL','NOTA'],
     questions: ['¿Qué hay exactamente en la ubicación X-Y-Z?', '¿Cuánto cuesta el contenido de esa ubicación?', '¿Hacia qué tienda va esa mercancía?'],
     crosses: [['R020','Ver estatus y tipo de la ubicación'], ['R081','Detectar ítems con doble ubicación'], ['R033','Complementar con lote y vencimiento']],
-    category: 'almacenaje'
+    category: 'almacenaje', also: ['slot']
   },
   {
     code: 'R020', name: 'Detalle de Ubicaciones', process: 'Almacenaje', color: '#4fd9a0',
@@ -1302,7 +1302,7 @@ const REPORTS = [
     fields: ['UBICACIÓN','ZONA','TIPO_UBICACIÓN','UBICACIÓN STATUS','FECHA ULTIMO CONTEO','CYCLE COUNT STATUS','ITEM','LOCATION TYPE'],
     questions: ['¿Esta ubicación está disponible?', '¿Cuándo fue el último conteo?', '¿Cuántas ubicaciones vacías hay en la zona X?'],
     crosses: [['R150','Cruzar cycle count status vs conteos efectuados'], ['R033','Ver qué hay en cada ubicación'], ['R081','Ver si ítems con doble ubicación tienen conteos pendientes']],
-    category: 'almacenaje'
+    category: 'almacenaje', also: ['slot','calidad']
   },
   {
     code: 'R092', name: 'Productividad Almacenaje Total CENDIS', process: 'Almacenaje', color: '#4fd9a0',
@@ -1319,7 +1319,7 @@ const REPORTS = [
     fields: ['UND SOLICITADAS POR TIENDA','UND EN SISTEMA','% DE FALLAS','ITEM','ZONA','UBICACION','TIPO'],
     questions: ['¿Qué ítems tienen doble ubicación?', '¿Cuál es el % de fallas de hoy?', '¿Cuántas unidades pedidas no tenían stock en sistema?'],
     crosses: [['R020','Ver si hay conteos cíclicos pendientes en esas ubicaciones'], ['R003','Verificar contenido real de las ubicaciones duplicadas'], ['R033','Cruzar con inventario en almacenaje'], ['R121','Correlacionar cancelaciones con índice de fallas']],
-    category: 'almacenaje'
+    category: 'almacenaje', also: ['slot','calidad']
   },
   {
     code: 'R119', name: 'Tareas de Reposición Pendientes', process: 'Reposición', color: '#f97b4f',
@@ -1351,7 +1351,7 @@ const REPORTS = [
     fields: ['ITEM','UBICACION DE DESPACHO','ZONA','NOMBRE','INVENTARIO EN PUESTO','DEPARTAMENTO','CAPACIDAD EN BULTOS','ROP EN BULTO','TI','HI','DIMENSIONES UNIDAD','DIMENSIONES BULTO','CASE PACK','UNIDAD DE DESPACHO','UNIDADES DISTRIBUIDAS'],
     questions: ['¿Qué puestos necesitan reposición urgente?', '¿Cuánto inventario tiene el puesto del ítem X?', '¿Cuál es la capacidad del puesto?'],
     crosses: [['R033','Ver si hay stock en almacenaje para reponer'], ['R119','Ver si ya hay una tarea de reposición generada'], ['R120','Cruzar inventario en puesto vs demanda actual']],
-    category: 'picking'
+    category: 'picking', also: ['slot','demanda']
   },
   {
     code: 'R120', name: 'Detalle por Ítem CENDIS', process: 'Picking', color: '#4f9cf9',
@@ -1360,7 +1360,7 @@ const REPORTS = [
     fields: ['ZONA','PUESTO DESPACHO','ÍTEM','DESCRIPCIÓN','UNIDADES EN PUESTO','UNIDADES PEDIDAS','BULTOS','TIPO PEDIDOS','CANT TIENDAS SOLICITANTES'],
     questions: ['¿Hay suficiente stock para cubrir la demanda?', '¿Cuántas tiendas están pidiendo este ítem?', '¿Por qué R120 da menos unidades que R155?'],
     crosses: [['R155','Comparar por ASIGNADO; R155 PEDIDO incluye lo no cubierto por stock'], ['R081','Ver si los ítems con brecha están en el índice de fallas'], ['R122','Ver si terminan cancelándose'], ['R031','Cruzar con ROP del puesto']],
-    category: 'picking'
+    category: 'picking', also: ['demanda','slot']
   },
   {
     code: 'R049', name: 'Informe Productividad Pickers', process: 'Picking', color: '#4f9cf9',
@@ -1376,7 +1376,7 @@ const REPORTS = [
     fields: ['ITEM','DESCRIPCION','DAYS_PICK','LNS','AVG_LNS','UNITS','AVG_UNITS'],
     questions: ['¿Cuáles son los ítems de mayor rotación?', '¿Cuál es el promedio diario del ítem X?', '¿El ROP está bien calibrado para la rotación real?'],
     crosses: [['R031','Comparar promedio diario vs inventario en puesto'], ['R012','Validar que el ROP refleja la demanda real'], ['R120','Comparar histórico vs demanda actual']],
-    category: 'picking'
+    category: 'picking', also: ['demanda']
   },
   {
     code: 'R004', name: 'Resumen de Carga', process: 'Despacho', color: '#f97b4f',
@@ -1434,7 +1434,7 @@ const REPORTS = [
     fields: ['FECHA','OLA','PEDIDO','UBIC_DESPACHO','ZONA','COD_TIENDA','TIENDA','CONTENEDOR','ITEM','CASEPACK','DESCRIPCION','UNIDADES_ASIGNADAS','UNIDADES_DESPACHADAS','HORA','VOLUMEN_UNITARIO','VOLUMEN_TOTAL','PESO','ESTATUS_CONTENEDOR','USER_ID'],
     questions: ['¿Qué despachó el operario X en la OLA Y?', '¿Cuánto pesó el despacho de la tienda Z?', '¿Qué contenedores siguen pendientes?'],
     crosses: [['R049a','Validar fill rate a nivel detallado'], ['R049','Relacionar con productividad del picker'], ['R121','Ver qué OLAs tienen cancelaciones vs asignaciones']],
-    category: 'despacho'
+    category: 'despacho', also: ['servicio']
   },
   {
     code: 'R049a', name: 'Fill Rate General por OLA', process: 'Servicio', color: '#4fd9a0',
@@ -1442,7 +1442,7 @@ const REPORTS = [
     fields: ['# OLA','UNIDADES PEDIDAS','UNIDADES ASIGNADAS','NIVEL DE SERVICIO','UNIDADES DESPACHADAS','TIEMPO DESPACHO','FILL RATE DESPACHADO','UNIDADES ENVIADAS','FILL RATE ENVIADO','UNIDADES EN TRÁNSITO','UNIDADES CANCELADAS','UNIDADES CON MANIFIESTO','UNIDADES AJUSTADAS','PENDIENTE POR DESPACHAR'],
     questions: ['¿Cuál es el fill rate de la OLA de hoy?', '¿Cuántas unidades se cancelaron?', '¿Cuánto tardó el despacho?', '¿Cuántas unidades siguen pendientes?'],
     crosses: [['R045','Profundizar por ítem específico'], ['R121','Detallar las cancelaciones de la OLA'], ['R122','Ver qué pendientes se pueden recuperar'], ['R130','Ver el detalle de asignaciones']],
-    category: 'servicio'
+    category: 'servicio', also: ['despacho']
   },
   {
     code: 'R045', name: 'Fill Rate por Ítem', process: 'Servicio', color: '#4fd9a0',
@@ -1450,7 +1450,7 @@ const REPORTS = [
     fields: ['FECHA','ZONA','UBICACION','ITEM','DESCRIPCIÓN','UNIDADES FOTO INV','UNIDADES_PEDIDAS','UNIDADES_ASIGNADAS','NIVEL_DE_SERVICIO','UNIDADES_DESPACHADAS','FILL_RATE_DESPACHADO','TIEMPO_DESPACHO','UNIDADES_TRÁNSITO','UNIDADES_CANCELADAS','UNIDADES_CON_MANIFIESTO','UNIDADES AJUSTADAS','PRECIO'],
     questions: ['¿Por qué falló el fill rate del ítem X?', '¿Había inventario cuando se generó el pedido?', '¿Cuánto dinero se dejó de despachar?'],
     crosses: [['R049a','Comparar fill rate ítem vs fill rate global OLA'], ['R031','Cruzar foto de inventario vs inventario en puesto'], ['R025','Relacionar unidades ajustadas con costos']],
-    category: 'servicio'
+    category: 'servicio', also: ['demanda']
   },
   {
     code: 'R121', name: 'Unidades Canceladas por Wave', process: 'Servicio', color: '#4fd9a0',
@@ -1458,7 +1458,7 @@ const REPORTS = [
     fields: ['WAVE_NBR','ITEM_ID','DESCRIPTION','UNIT_QTY','CYCLE_COUNT_STATUS'],
     questions: ['¿Qué se canceló en la wave X?', '¿Esos ítems tenían el conteo cíclico al día?', '¿Qué ítems se cancelan con más frecuencia?'],
     crosses: [['R122','Ver qué todavía se puede recuperar'], ['R081','Ver si hay fallas de inventario asociadas'], ['R049a','Ver cómo afectan el fill rate']],
-    category: 'servicio'
+    category: 'servicio', also: ['despacho']
   },
   {
     code: 'R122', name: 'Unidades Pendientes por OLA', process: 'Servicio', color: '#4fd9a0',
@@ -1466,7 +1466,7 @@ const REPORTS = [
     fields: ['OLA','ITEM','DESCRIPCION','UNIDADES','TIPO_DESPACHO'],
     questions: ['¿Qué ítems de la OLA X están pendientes?', '¿Hay stock en puesto para resolverlos?', '¿Cuál es el tipo de despacho afectado?'],
     crosses: [['R031','Ver si hay stock para resolver los pendientes'], ['R119','Ver si hay reposición en camino'], ['R121','Entender qué parte termina cancelándose']],
-    category: 'servicio'
+    category: 'servicio', also: ['despacho']
   },
   {
     code: 'R025', name: 'Costo de Ajustes', process: 'Calidad', color: '#f9c74f',
@@ -1482,7 +1482,7 @@ const REPORTS = [
     fields: ['UBICACION','ITEM','DESCRIPCION','TIPO_UBICACION','CONTENEDOR','USUARIO','ESTADO_CONTENEDOR','UNIDADES','COSTO_PROMEDIO_UNITARIO','COSTO_PROMEDIO_TOTAL'],
     questions: ['¿Cuánto dinero hay en inventario en el CENDIS?', '¿Cuál es el valor inmovilizado en contenedores bloqueados?', '¿Cómo se distribuye el inventario por tipo de ubicación?', '¿Cuál es el costo total por ítem en almacén?'],
     crosses: [['R033','Complementar la valorización con lote y fechas de vencimiento'], ['R025','Relacionar el costo del inventario con los ajustes realizados'], ['R081','Calcular el valor inmovilizado en ítems con doble ubicación'], ['R012','Comparar inventario total valorizado vs inventario por ítem del maestro'], ['R053','Ver el valor del inventario atascado en ubicaciones temporales']],
-    category: 'calidad'
+    category: 'calidad', also: ['slot','almacenaje']
   },
   {
     code: 'R030', name: 'FTD Outbound Audit (Auditoría de Despacho)', process: 'Calidad', color: '#f9c74f',
@@ -1490,7 +1490,7 @@ const REPORTS = [
     fields: ['ZONA','TIENDA','CONTENEDOR','FECHA/HORA','USUARIO CONTROL DE CALIDAD','USUARIO DESPACHO','ARTÍCULO','DESCRIPCIÓN','CANTIDAD ESPERADA','CANTIDAD CONTADA','DIFERENCIA','INNER','CASEPACK'],
     questions: ['¿Las unidades despachadas coinciden con lo esperado?', '¿Qué contenedores tienen diferencias antes de salir?', '¿Qué zonas o tiendas tienen más errores de despacho?', '¿Cuántas unidades se auditaron en el contenedor X?'],
     crosses: [['R130','Comparar lo despachado vs lo auditado por contenedor'], ['R049','Relacionar errores de despacho con productividad del picker'], ['R121','Ver si las diferencias terminan en cancelaciones'], ['R025','Validar si las diferencias generan ajustes de inventario'], ['R081','Correlacionar errores de despacho con fallas de ubicación']],
-    category: 'calidad'
+    category: 'calidad', also: ['despacho']
   },
   {
     code: 'R150', name: 'Conteos Efectuados en el CENDIS', process: 'Calidad', color: '#f9c74f',
@@ -1522,7 +1522,7 @@ const REPORTS = [
     fields: ['ITEM','UBICACION DESPACHO','ZONA','DESCRIPCION','CASEPACK','CAPACIDAD PUESTO','ROP','TI','HI','DC_TI','DC_HI','DIMENSIONES ITEM','DIMENSIONES BULTO','UND PUESTO DESPACHO','UNIDADES DISTRIBUIDAS','PESO ITEM','VENCE','DIAS VENCIMIENTO','UND ALMACENAJE','ID PROVEEDOR','INVENTARIO TOTAL','INVENTARIO TEMPORAL','PLAN ALMACENAJE','SOM','TIENDAS ASOCIADAS','TIPO DISTRIBUCIÓN','SOH TIENDAS','NOMBRE PROVEEDOR','UNIDAD DESPACHO','ANAQUELES Y DEFINITIVOS'],
     questions: ['¿Cuál es la configuración de paleta del ítem X?', '¿Cuál es el inventario total de este ítem?', '¿A qué tiendas va este ítem?', '¿Cuál es el plan de almacenaje y slot asignado?'],
     crosses: [['R031','Comparar inventario en puesto vs ROP'], ['R033','Validar inventario en almacenaje'], ['R045','Enriquecer fill rate con datos maestros']],
-    category: 'maestro'
+    category: 'maestro', also: ['slot','demanda']
   },
   {
     code: 'R124', name: 'Demanda Líneas y Unidades', process: 'Demanda', color: '#f96b6b',
@@ -1540,7 +1540,7 @@ const REPORTS = [
     fields: ['STORE','ORDER_NO','ITEM','ITEM_DESC','DISTRIBUTION_PACK','PEDIDO','ASIGNADO','DEFINITE_MAX','INVENTARIO_TIENDA','INVENTARIO_CENDIS','ROP'],
     questions: ['¿Cuál es la brecha entre lo pedido y lo asignado por tienda?', '¿La tienda está bajo su ROP?', '¿El CENDIS tiene stock para cubrir la demanda?', '¿Por qué R155 da más unidades que R120?'],
     crosses: [['R120','Comparar SIEMPRE por campo ASIGNADO, no PEDIDO'], ['R049a','Comparar lo asignado vs fill rate real por OLA'], ['R031','Validar si el inventario en puesto cubre lo asignado'], ['R045','Relacionar demanda comercial con fill rate por ítem'], ['R124','Contrastar fuentes de demanda (R155 es la confiable)']],
-    category: 'demanda'
+    category: 'demanda', also: ['servicio']
   },
   {
     code: 'R076', name: 'Detalle de Transferencia Mensual', process: 'Demanda', color: '#f96b6b',
@@ -1573,21 +1573,11 @@ const REPORTS = [
     fields: ['— Pedidos sin rutas: Tienda, Nombre, Código del Pedido','— Tiendas sin pedidos: Código, Nombre','— Tiendas con pedidos: Código, Nombre, Código del Pedido, Cantidad de Productos, OLA','— Hospital del RIB: Familia, Tipo, N° Mensaje'],
     questions: ['¿Qué pedidos no tienen ruta asignada?', '¿Qué tiendas quedaron sin pedido?', '¿Qué tiendas tienen pedido y en qué OLA?', '¿Hay errores de integración entre sistemas (RIB)?'],
     crosses: [['R049a','Ver si las tiendas con pedido cumplen su fill rate'], ['R009','Validar que los pedidos sin ruta no queden sin cargar'], ['R155','Contrastar tiendas sin pedido vs demanda esperada'], ['R130','Confirmar que las tiendas con pedido tienen asignaciones reales'], ['R122','Relacionar pedidos sin ruta con unidades pendientes']],
-    category: 'monitoreo'
-  },
-  // ─── SLOT: reportes relacionados con ubicaciones, slotting y posiciones ───
-  {
-    code: 'R012s', name: 'Maestro de Ítems — Vista Slot', process: 'Slot', color: '#22d3ee',
-    desc: 'Desde el maestro de ítems se ve el slot/ubicación de despacho asignada, zona, plan de almacenaje y anaqueles definitivos de cada ítem.',
-    fields: ['ITEM','UBICACION DESPACHO','ZONA','PLAN ALMACENAJE','ANAQUELES Y DEFINITIVOS','CAPACIDAD PUESTO'],
-    questions: ['¿Qué slot tiene asignado el ítem X?', '¿Cuál es su plan de almacenaje?', '¿Cuál es la capacidad del puesto?'],
-    crosses: [['R031','Ver inventario actual en ese slot'], ['R020','Validar estatus de la ubicación'], ['R003','Ver contenido detallado del slot']],
-    category: 'slot', aliasOf: 'R012'
+    category: 'monitoreo', also: ['despacho','demanda']
   }
 ];
 
-// Reportes que también aplican a la categoría SLOT (referencias cruzadas, no duplican ficha)
-const SLOT_RELATED = ['R012','R003','R020','R031','R033','R053','R081','R000','R120','R174'];
+const CAT_LABELS = { recepcion:'Recepción', almacenaje:'Almacenaje', reposicion:'Reposición', picking:'Picking', despacho:'Despacho', servicio:'Servicio', calidad:'Calidad', demanda:'Demanda', slot:'Slot', monitoreo:'Monitoreo', maestro:'Maestro' };
 
 const QUICK_FIND = [
   { q: '¿Qué mercancía llegó hoy?', codes: ['R117','R111','R042'] },
@@ -1821,14 +1811,21 @@ function buildGridForCategory(gridId, category){
   let filtered;
   if(category==='all'){
     filtered=REPORTS.filter(r=>!r.aliasOf);
-  } else if(category==='slot'){
-    // SLOT: combina los reportes marcados slot + los relacionados (sin duplicar fichas alias)
-    const slotCodes=new Set(SLOT_RELATED);
-    filtered=REPORTS.filter(r=>!r.aliasOf && slotCodes.has(r.code));
   } else {
-    filtered=REPORTS.filter(r=>r.category===category && !r.aliasOf);
+    // Un reporte aparece en una categoría si es su categoría primaria O está en su lista "also" (secundarias).
+    // Los reportes con alias (vistas duplicadas) también se incluyen cuando coinciden con la categoría pedida.
+    filtered=REPORTS.filter(r=>{
+      if(r.aliasOf && r.category!==category) return false;
+      const cats=[r.category].concat(r.also||[]);
+      return cats.includes(category);
+    });
   }
   container.innerHTML=filtered.map(buildReportCard).join('');
+}
+
+// Marca visual cuando un reporte se muestra fuera de su categoría primaria
+function buildReportCardCtx(r, viewingCategory){
+  return buildReportCard(r);
 }
 
 function buildScenarios(){
@@ -1860,7 +1857,7 @@ function openModal(code){
   body.innerHTML=`
     <div class="modal-code">${r.code}</div>
     <div class="modal-title">${r.name}</div>
-    <div class="modal-process">Proceso: ${r.process}</div>
+    <div class="modal-process">Proceso: ${r.process}${r.also&&r.also.length?` · <span style="color:var(--text-muted)">También usado en: ${r.also.map(a=>CAT_LABELS[a]||a).join(', ')}</span>`:''}</div>
     ${r.alert?`<div class="alert-box">⚠️ <span>${r.alert}</span></div>`:''}
     <div class="modal-section"><div class="modal-section-title">¿Para qué sirve?</div><p class="modal-desc">${r.desc}</p></div>
     <div class="modal-section"><div class="modal-section-title">Campos disponibles</div><div class="fields-list">${r.fields.map(f=>`<span class="field-tag">${f}</span>`).join('')}</div></div>
