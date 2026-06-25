@@ -1355,10 +1355,11 @@ const REPORTS = [
   },
   {
     code: 'R120', name: 'Detalle por Ítem CENDIS', process: 'Picking', color: '#4f9cf9',
-    desc: 'Estado de cada ítem: cuánto hay en el puesto, cuánto se está pidiendo y cuántas tiendas lo solicitan.',
+    desc: 'Estado de cada ítem: cuánto hay en el puesto, cuánto se está pidiendo y cuántas tiendas lo solicitan. Sus "Unidades Pedidas" equivalen al campo ASIGNADO de R155.',
+    alert: 'R120 suele dar MENOS unidades que R155 (campo PEDIDO). No es un error: ver la nota "R155 vs R120" en Búsquedas Clave. Sus Unidades Pedidas = ASIGNADO de R155.',
     fields: ['ZONA','PUESTO DESPACHO','ÍTEM','DESCRIPCIÓN','UNIDADES EN PUESTO','UNIDADES PEDIDAS','BULTOS','TIPO PEDIDOS','CANT TIENDAS SOLICITANTES'],
-    questions: ['¿Hay suficiente stock para cubrir la demanda?', '¿Cuántas tiendas están pidiendo este ítem?', '¿Cuál es la demanda actual del ítem X?'],
-    crosses: [['R081','Ver si los ítems con brecha están en el índice de fallas'], ['R122','Ver si terminan cancelándose'], ['R031','Cruzar con ROP del puesto']],
+    questions: ['¿Hay suficiente stock para cubrir la demanda?', '¿Cuántas tiendas están pidiendo este ítem?', '¿Por qué R120 da menos unidades que R155?'],
+    crosses: [['R155','Comparar por ASIGNADO; R155 PEDIDO incluye lo no cubierto por stock'], ['R081','Ver si los ítems con brecha están en el índice de fallas'], ['R122','Ver si terminan cancelándose'], ['R031','Cruzar con ROP del puesto']],
     category: 'picking'
   },
   {
@@ -1535,9 +1536,10 @@ const REPORTS = [
   {
     code: 'R155', name: 'Detalle Distribución por Ítem y Tienda', process: 'Demanda', color: '#f96b6b',
     desc: 'Vista comercial más completa de demanda: cruza pedido, asignado, inventario en tienda, inventario en CENDIS y ROP en una sola tabla.',
+    alert: 'Al comparar con R120: usar el campo ASIGNADO (no PEDIDO). PEDIDO siempre da más porque incluye unidades que la tienda pidió pero el CENDIS no tenía stock para cubrir. Ver la nota "R155 vs R120" en Búsquedas Clave.',
     fields: ['STORE','ORDER_NO','ITEM','ITEM_DESC','DISTRIBUTION_PACK','PEDIDO','ASIGNADO','DEFINITE_MAX','INVENTARIO_TIENDA','INVENTARIO_CENDIS','ROP'],
-    questions: ['¿Cuál es la brecha entre lo pedido y lo asignado por tienda?', '¿La tienda está bajo su ROP?', '¿El CENDIS tiene stock para cubrir la demanda?', '¿La asignación respeta el máximo definitivo?'],
-    crosses: [['R049a','Comparar lo asignado vs fill rate real por OLA'], ['R120','Unir vista comercial con vista de puesto en almacén'], ['R031','Validar si el inventario en puesto cubre lo asignado'], ['R045','Relacionar demanda comercial con fill rate por ítem'], ['R124','Contrastar fuentes de demanda (R155 es la confiable)']],
+    questions: ['¿Cuál es la brecha entre lo pedido y lo asignado por tienda?', '¿La tienda está bajo su ROP?', '¿El CENDIS tiene stock para cubrir la demanda?', '¿Por qué R155 da más unidades que R120?'],
+    crosses: [['R120','Comparar SIEMPRE por campo ASIGNADO, no PEDIDO'], ['R049a','Comparar lo asignado vs fill rate real por OLA'], ['R031','Validar si el inventario en puesto cubre lo asignado'], ['R045','Relacionar demanda comercial con fill rate por ítem'], ['R124','Contrastar fuentes de demanda (R155 es la confiable)']],
     category: 'demanda'
   },
   {
@@ -1602,6 +1604,7 @@ const QUICK_FIND = [
   { q: '¿Qué puestos necesitan reposición?', codes: ['R031','R119'] },
   { q: '¿Cuánto costaron los ajustes?', codes: ['R025'] },
   { q: '¿Cuál es la demanda por tienda?', codes: ['R155','R124','R120'] },
+  { q: '¿Por qué R155 y R120 difieren en unidades?', codes: ['R155','R120'] },
   { q: '¿Qué tan preciso es mi inventario?', codes: ['R150','R027','R028'] },
   { q: '¿Las unidades despachadas coinciden con lo esperado?', codes: ['R030'] },
   { q: '¿Qué se transfirió este mes?', codes: ['R076'] },
@@ -1695,6 +1698,13 @@ const GLOSARIO = {
 };
 
 const SCENARIOS = [
+  { icon:'⚖️', q:'¿Por qué R155 y R120 me dan distinta cantidad de unidades para el mismo día?', steps:[
+    '<strong>No es un error</strong> — miden cosas distintas. Para validar el despacho, compara <span class="rtag" onclick="openModal(\'R155\')">R155</span> por su campo <strong>ASIGNADO</strong>, nunca por PEDIDO.',
+    '<strong>PEDIDO</strong> (R155) = lo que la tienda quiso. <strong>ASIGNADO</strong> (R155) = lo que el CENDIS reservó con stock real. <strong>Unidades Pedidas</strong> de <span class="rtag" onclick="openModal(\'R120\')">R120</span> equivale al ASIGNADO de R155.',
+    'Causa 1 — Recorte por stock: cuando la tienda pide más de lo que hay, el CENDIS recorta. Por eso PEDIDO > ASIGNADO. Esa brecha es esperada.',
+    'Causa 2 — Corrida de tiempo: R155 puede incluir ítems procesados después del corte de R120 (a menudo productos de pocas tiendas o de un tipo de orden distinto). Esos ítems aparecen en R155 pero no en R120 de esa corrida.',
+    '<strong>Regla práctica:</strong> si los números no cuadran, revisa (1) que estés comparando ASIGNADO vs Unidades Pedidas, y (2) la hora/fecha de corrida de cada reporte. Ante duda de datos, escalar a María Parra para certificar.'
+  ]},
   { icon:'📦', q:'¿Quiero saber si un ítem llegó hoy?', steps:[
     'Abre <span class="rtag" onclick="openModal(\'R117\')">R117</span> — busca por ítem o fecha de recepción.',
     'Complementa con <span class="rtag" onclick="openModal(\'R042\')">R042</span> si quieres ver si todavía está en puerta.',
