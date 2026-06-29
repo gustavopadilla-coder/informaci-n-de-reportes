@@ -926,14 +926,14 @@
       <div class="nav-section"><span class="nav-section-label">Por Proceso</span></div>
       <div class="nav-item" onclick="showSection('recepcion')">📥 Recepción <span class="badge badge-blue">7</span></div>
       <div class="nav-item" onclick="showSection('almacenaje')">🏗️ Almacenaje <span class="badge badge-green">7</span></div>
-      <div class="nav-item" onclick="showSection('reposicion')">🔄 Reposición <span class="badge badge-orange">3</span></div>
+      <div class="nav-item" onclick="showSection('reposicion')">🔄 Reposición <span class="badge badge-orange">4</span></div>
       <div class="nav-item" onclick="showSection('picking')">🛒 Picking <span class="badge badge-blue">4</span></div>
       <div class="nav-item" onclick="showSection('despacho')">🚚 Despacho <span class="badge badge-orange">12</span></div>
       <div class="nav-item" onclick="showSection('servicio')">📊 Servicio & Fill Rate <span class="badge badge-green">6</span></div>
       <div class="nav-item" onclick="showSection('calidad')">🔍 Calidad & Inventario <span class="badge badge-yellow">11</span></div>
       <div class="nav-item" onclick="showSection('demanda')">📈 Demanda <span class="badge badge-red">10</span></div>
       <div class="nav-item" onclick="showSection('slot')">📐 Slot & Ubicaciones <span class="badge badge-blue">10</span></div>
-      <div class="nav-item" onclick="showSection('monitoreo')">🖥️ Monitoreo & Control <span class="badge badge-green">1</span></div>
+      <div class="nav-item" onclick="showSection('monitoreo')">🖥️ Monitoreo & Control <span class="badge badge-green">2</span></div>
 
       <div class="nav-section"><span class="nav-section-label">Guías</span></div>
       <div class="nav-item" onclick="showSection('busquedas')">🔍 Búsquedas Clave</div>
@@ -1346,12 +1346,12 @@ const REPORTS = [
     category: 'reposicion'
   },
   {
-    code: 'R031', name: 'Inventario Picking por Puesto', process: 'Picking', color: '#4f9cf9',
+    code: 'R031', name: 'Inventario Picking por Puesto', process: 'Picking', color: '#4f9cf9', also: ['slot','demanda','reposicion'],
     desc: 'Cuánto hay en cada puesto de picking, si está bajo el ROP y cuánto cabe en ese puesto.',
     fields: ['ITEM','UBICACION DE DESPACHO','ZONA','NOMBRE','INVENTARIO EN PUESTO','DEPARTAMENTO','CAPACIDAD EN BULTOS','ROP EN BULTO','TI','HI','DIMENSIONES UNIDAD','DIMENSIONES BULTO','CASE PACK','UNIDAD DE DESPACHO','UNIDADES DISTRIBUIDAS'],
     questions: ['¿Qué puestos necesitan reposición urgente?', '¿Cuánto inventario tiene el puesto del ítem X?', '¿Cuál es la capacidad del puesto?'],
     crosses: [['R033','Ver si hay stock en almacenaje para reponer'], ['R119','Ver si ya hay una tarea de reposición generada'], ['R120','Cruzar inventario en puesto vs demanda actual']],
-    category: 'picking', also: ['slot','demanda']
+    category: 'picking'
   },
   {
     code: 'R120', name: 'Detalle por Ítem CENDIS', process: 'Picking', color: '#4f9cf9',
@@ -1437,12 +1437,12 @@ const REPORTS = [
     category: 'despacho', also: ['servicio']
   },
   {
-    code: 'R049a', name: 'Fill Rate General por OLA', process: 'Servicio', color: '#4fd9a0',
+    code: 'R049a', name: 'Fill Rate General por OLA', process: 'Servicio', color: '#4fd9a0', also: ['despacho','monitoreo'],
     desc: 'Nivel de cumplimiento completo por OLA: desde lo pedido hasta lo enviado, con cancelaciones y pendientes.',
     fields: ['# OLA','UNIDADES PEDIDAS','UNIDADES ASIGNADAS','NIVEL DE SERVICIO','UNIDADES DESPACHADAS','TIEMPO DESPACHO','FILL RATE DESPACHADO','UNIDADES ENVIADAS','FILL RATE ENVIADO','UNIDADES EN TRÁNSITO','UNIDADES CANCELADAS','UNIDADES CON MANIFIESTO','UNIDADES AJUSTADAS','PENDIENTE POR DESPACHAR'],
     questions: ['¿Cuál es el fill rate de la OLA de hoy?', '¿Cuántas unidades se cancelaron?', '¿Cuánto tardó el despacho?', '¿Cuántas unidades siguen pendientes?'],
     crosses: [['R045','Profundizar por ítem específico'], ['R121','Detallar las cancelaciones de la OLA'], ['R122','Ver qué pendientes se pueden recuperar'], ['R130','Ver el detalle de asignaciones']],
-    category: 'servicio', also: ['despacho']
+    category: 'servicio'
   },
   {
     code: 'R045', name: 'Fill Rate por Ítem', process: 'Servicio', color: '#4fd9a0',
@@ -1453,12 +1453,12 @@ const REPORTS = [
     category: 'servicio', also: ['demanda']
   },
   {
-    code: 'R121', name: 'Unidades Canceladas por Wave', process: 'Servicio', color: '#4fd9a0',
+    code: 'R121', name: 'Unidades Canceladas por Wave', process: 'Servicio', color: '#4fd9a0', also: ['despacho','calidad'],
     desc: 'Unidades que ya no se pueden recuperar porque fueron canceladas definitivamente.',
     fields: ['WAVE_NBR','ITEM_ID','DESCRIPTION','UNIT_QTY','CYCLE_COUNT_STATUS'],
     questions: ['¿Qué se canceló en la wave X?', '¿Esos ítems tenían el conteo cíclico al día?', '¿Qué ítems se cancelan con más frecuencia?'],
     crosses: [['R122','Ver qué todavía se puede recuperar'], ['R081','Ver si hay fallas de inventario asociadas'], ['R049a','Ver cómo afectan el fill rate']],
-    category: 'servicio', also: ['despacho']
+    category: 'servicio'
   },
   {
     code: 'R122', name: 'Unidades Pendientes por OLA', process: 'Servicio', color: '#4fd9a0',
