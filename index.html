@@ -937,7 +937,7 @@
 
       <div class="nav-section"><span class="nav-section-label">Guías</span></div>
       <div class="nav-item" onclick="showSection('busquedas')">🔍 Búsquedas Clave</div>
-      <div class="nav-item" onclick="showSection('wip')">⚙️ Procedimiento WIP</div>
+      <div class="nav-item" onclick="showSection('wip')">⚙️ Procedimientos Operativos</div>
       <div class="nav-item" onclick="showSection('alertas')">⚠️ Alertas & Gaps <span class="badge badge-red">4</span></div>
     </nav>
   </div>
@@ -1091,8 +1091,8 @@
     <!-- WIP -->
     <div id="sec-wip" class="section">
       <div class="section-header">
-        <div class="section-title">⚙️ Procedimiento WIP</div>
-        <div class="section-subtitle">Cómo bloquear y desbloquear contenedores en el sistema WMS.</div>
+        <div class="section-title">⚙️ Procedimientos Operativos</div>
+        <div class="section-subtitle">Cómo resolver situaciones comunes en el sistema WMS: bloqueos, WIP y errores de reposición.</div>
       </div>
 
       <div class="card" style="margin-bottom:20px;">
@@ -1160,6 +1160,51 @@
           <li>Presionar <strong>Ctrl 1</strong> para iniciar</li>
           <li>Presionar <strong>Ctrl 4</strong> para terminar ← esto lo soluciona</li>
         </ol>
+      </div>
+    </div>
+
+      <div style="height:1px;background:var(--border);margin:28px 0;"></div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);margin-bottom:8px;">📦 Error al reponer: "las unidades deben coincidir con el paquete interno"</div>
+        <p style="font-size:14px;color:var(--text-muted);line-height:1.6;margin-bottom:16px;">
+          Cuando intentas llevar un contenedor desde almacenaje al puesto de picking y el sistema muestra un mensaje indicando que <strong>las unidades deben reponerse con las mismas unidades del contenedor interno</strong> (o similar), significa que la cantidad del contenedor no está expresada en paquetes internos. El sistema necesita que le digas cuántos <em>paquetes</em> vas a reponer, no cuántas <em>unidades sueltas</em>.
+        </p>
+      </div>
+
+      <div class="wip-box" style="border-color: rgba(249,115,22,0.3);">
+        <div class="wip-box-title" style="color: var(--despacho);">🔧 Procedimiento para corregirlo</div>
+        <ol class="wip-steps" style="margin-bottom:16px;">
+          <li>Buscar el <strong>contenedor</strong> que tiene el producto. También puedes buscar directamente por <strong>artículo</strong> y desde allí ver el contenedor asociado.</li>
+          <li>Seleccionar <strong>Registro → Detalle</strong>.</li>
+          <li>En la parte inferior de la pantalla, hacer <strong>doble clic</strong> sobre el registro. Se abrirá una ventana con los siguientes campos:
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;">
+              <span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(249,115,22,0.08);color:#f97316;border:1px solid rgba(249,115,22,0.2);">ID del Artículo</span>
+              <span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(249,115,22,0.08);color:#f97316;border:1px solid rgba(249,115,22,0.2);">Orden de Distribución</span>
+              <span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(249,115,22,0.08);color:#f97316;border:1px solid rgba(249,115,22,0.2);">Ctd Cntr</span>
+              <span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(249,115,22,0.08);color:#f97316;border:1px solid rgba(249,115,22,0.2);">Cantidad de Unidades</span>
+              <span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(249,115,22,0.08);color:#f97316;border:1px solid rgba(249,115,22,0.2);">UM</span>
+              <span style="font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;background:rgba(249,115,22,0.08);color:#f97316;border:1px solid rgba(249,115,22,0.2);">Unidad de Distribución</span>
+            </div>
+          </li>
+          <li>Realizar el cálculo: <strong>Cantidad de Unidades disponibles ÷ Cantidad del paquete interno = valor para Ctd Cntr</strong>.</li>
+          <li>Colocar el resultado en el campo <strong>Ctd Cntr</strong>.</li>
+          <li>Guardar. Esto corrige el problema y permite reponer el producto en el puesto de picking sin inconvenientes.</li>
+        </ol>
+
+        <div class="alert-banner" style="background:rgba(249,115,22,0.07);border-color:rgba(249,115,22,0.2);color:#fdba74;">
+          ⚠️ <span><strong>Importante:</strong> en la reposición, lo que se coloca son <strong>paquetes internos, no unidades sueltas</strong>. Si el paquete interno es de 12 unidades y colocas 10, estás reponiendo 10 × 12 = <strong>120 unidades reales</strong>. Siempre verifica este multiplicador antes de confirmar la reposición para evitar sobrestock en el puesto.</span>
+        </div>
+
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:12px;">
+          <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:10px;">Ejemplo práctico</div>
+          <div style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+            <strong style="color:var(--text);">Situación:</strong> Tienes un contenedor con 240 unidades y el paquete interno es de 12.<br>
+            <strong style="color:var(--text);">Cálculo:</strong> 240 ÷ 12 = <strong style="color:var(--despacho);">20</strong><br>
+            <strong style="color:var(--text);">Acción:</strong> Colocar <strong style="color:var(--despacho);">20</strong> en el campo Ctd Cntr.<br>
+            <strong style="color:var(--text);">Resultado:</strong> El sistema entiende que repones 20 paquetes de 12 = 240 unidades. ✓
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1732,6 +1777,12 @@ const SCENARIOS = [
     'Abre <span class="rtag" onclick="openModal(\'R027\')">R027</span> — para ver lo que se contó físicamente y por quién.',
     'Abre <span class="rtag" onclick="openModal(\'R150\')">R150</span> — para el comparativo original vs contado y los ajustes.',
     'Abre <span class="rtag" onclick="openModal(\'R025\')">R025</span> — para ver el costo de los ajustes.'
+  ]},
+  { icon:'📦', q:'¿Me sale un error de "paquete interno" al reponer?', steps:[
+    'Esto pasa porque el sistema necesita la cantidad en <strong>paquetes internos</strong>, no en unidades sueltas.',
+    'Busca el contenedor (o artículo) → <strong>Registro → Detalle</strong> → doble clic abajo.',
+    'En la ventana divide: <strong>Unidades disponibles ÷ Paquete interno = Ctd Cntr</strong>.',
+    'Coloca el resultado en <strong>Ctd Cntr</strong> y guarda. Ver procedimiento completo en la sección "Procedimientos Operativos".'
   ]},
   { icon:'🔒', q:'¿Hay un contenedor bloqueado, qué hago?', steps:[
     'Identifica el estatus en <span class="rtag" onclick="openModal(\'R033\')">R033</span>: I = disponible, X = vencido, T = WIP.',
